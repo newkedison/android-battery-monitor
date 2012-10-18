@@ -6,6 +6,8 @@ import java.io.InputStream;
 
 import java.util.ListIterator;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 
 import android.content.BroadcastReceiver;
@@ -15,11 +17,15 @@ import android.content.IntentFilter;
 
 import android.os.IBinder;
 
+import android.support.v4.app.TaskStackBuilder;
+
 import static tk.newk.common.log.*;
 import static tk.newk.common.utils.*;
 
 import tk.newk.battery.Common;
 import static tk.newk.battery.Common.*;
+
+import android.support.v4.app.NotificationCompat;
 
 public class MonitorService extends Service
 {
@@ -193,6 +199,8 @@ public class MonitorService extends Service
       logd(this, bi.toString());
       save_history(bi);
       update_history_list(bi);
+      logd(this, "start to update notification");
+      update_notification(bi);
     }
     else if (!is_receiver_registed)
     {
@@ -240,6 +248,7 @@ public class MonitorService extends Service
     }
 
   }
+
   @Override
   public void onDestroy()
   {
@@ -250,7 +259,46 @@ public class MonitorService extends Service
       logd("saving unsaved record before service stopped");
       append_records_to_file(FILE_NAME_RECENT, recent_file_record_count, -1);
     }
+    NotificationManager nm = (NotificationManager)getSystemService(
+        Context.NOTIFICATION_SERVICE);
+    nm.cancelAll();
     logw(this, "service is Destroy");
+  }
+
+  int get_icon_id(int level)
+  {
+    if (level < 0 || level > 100)
+      return R.drawable.red_000;
+    if (level <= 20)
+      return R.drawable.red_000 + level;
+    if (level <= 40)
+      return R.drawable.yellow_020 + level - 20;
+    return R.drawable.blue_040 + level - 40;
+  }
+
+  private NotificationCompat.Builder m_builder;
+
+  void update_notification(BatteryInfo bi)
+  {
+    int icon_id = get_icon_id(bi.level);
+    if (m_builder == null)
+    {
+      m_builder = new NotificationCompat.Builder(this);
+      Intent open_intent = new Intent(this, mainActivity.class);
+      TaskStackBuilder stack_builder = TaskStackBuilder.create(this);
+      stack_builder.addParentStack(mainActivity.class);
+      stack_builder.addNextIntent(open_intent);
+      PendingIntent pending_intent = stack_builder.getPendingIntent(
+          0,
+          PendingIntent.FLAG_UPDATE_CURRENT);
+      m_builder.setContentIntent(pending_intent);
+    }
+    m_builder.setSmallIcon(icon_id)
+        .setContentTitle(String.format("Level: %02d%%", bi.level))
+        .setContentText("click to see more detail");
+    NotificationManager nm = (NotificationManager)getSystemService(
+        Context.NOTIFICATION_SERVICE);
+    nm.notify(1, m_builder.build());
   }
 }
 
