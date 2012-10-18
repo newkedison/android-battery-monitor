@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Hello World, mainActivity!</string>
+    <string name="app_name">battery</string>
+    <string name="lbl_battery_level">Battery Level:</string>
+    <string name="string_no_data">no data now</string>
+    <string name="btn_start_service">Start</string>
+    <string name="btn_stop_service">Stop</string>
+
+</resources>

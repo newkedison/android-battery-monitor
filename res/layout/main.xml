@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    tools:context=".mainActivity" >
+
+  <TextView
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:text="@string/lbl_battery_level" />
+
+  <TextView android:id="@+id/lbl_battery_level"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content" />
+
+
+  <LinearLayout
+      android:orientation="horizontal"
+      android:layout_width="match_parent" 
+      android:layout_height="wrap_content">
+    <Button
+        android:text="@string/btn_start_service"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="start_service" />
+    <Button
+        android:text="@string/btn_stop_service"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="stop_service" />
+  </LinearLayout>
+  <!-- The frame layout is here since we will be showing either
+  the empty view or the list view.  -->
+  <FrameLayout
+      android:layout_width="match_parent" 
+      android:layout_height="0dip"
+      android:layout_weight="1" >
+      <!-- Here is the list. Since we are using a ListActivity, we
+           have to call it "@android:id/list" so ListActivity will
+           find it -->
+      <ListView android:id="@android:id/list"
+          android:layout_width="match_parent" 
+          android:layout_height="match_parent"
+          android:drawSelectorOnTop="false"/>
+      
+      <!-- Here is the view to show if the list is emtpy -->
+      <TextView android:id="@android:id/empty"
+          android:layout_width="match_parent" 
+          android:layout_height="match_parent"
+          android:text="@string/string_no_data"/>
+  </FrameLayout>
+</LinearLayout>
