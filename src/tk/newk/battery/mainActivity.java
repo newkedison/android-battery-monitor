@@ -20,6 +20,7 @@ public class mainActivity extends ListActivity
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    logv(this, "ativity is created");
     setContentView(R.layout.main);
     if (adapter_battery_used_rate == null)
       adapter_battery_used_rate = new MyArrayAdapter(this, battery_used_rate);
@@ -48,14 +49,25 @@ public class mainActivity extends ListActivity
   public void onResume()
   {
     super.onResume();
+    logv(this, "ativity is resume");
     need_update_list_view = true;
+    if (battery_info_to_battery_use_rate())
+      adapter_battery_used_rate.notifyDataSetChanged();
   }
 
   @Override
   public void onPause()
   {
     super.onPause();
+    logv(this, "ativity is pause");
     need_update_list_view = false;
+  }
+
+  @Override
+  public void onStop()
+  {
+    super.onStop();
+    logv(this, "activity is stop");
   }
 
   public void start_service(View v)

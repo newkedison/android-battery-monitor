@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
@@ -34,6 +35,7 @@ public class Common
   //buffer how many recored before save the buffer data to real file
   final static int SAVE_TO_FILE_STEP = 20;
 
+  static boolean is_receiver_registed = false;
   static BatteryInfo[] buffer_data = new BatteryInfo[HISTORY_FILE_RECORD_COUNT];
   static int buffer_data_used_size = 0;
   static int recent_file_record_count = 0;
@@ -42,6 +44,35 @@ public class Common
   static ArrayList<BatteryUsedRate> battery_used_rate
     = new ArrayList<BatteryUsedRate>();
   static boolean need_update_list_view = false;
+  static BroadcastReceiver battery_changed_receiver 
+    = new BatteryChangedReceiver();
+  static FixFIFO<BatteryInfo> history = new FixFIFO<BatteryInfo>(FIFO_SIZE);
+
+  static boolean battery_info_to_battery_use_rate()
+  {
+    if (need_update_list_view && adapter_battery_used_rate != null)
+    {
+      battery_used_rate.clear();
+      if (history.size() > 1)
+      {
+        ListIterator<BatteryInfo> it = history.Iterator();
+        BatteryInfo prev = it.next();
+        BatteryInfo now;
+        while(it.hasNext())
+        {
+          now = it.next();
+          BatteryUsedRate used_rate = new BatteryUsedRate();
+          used_rate.time = now.time;
+          used_rate.rate = (float)(now.level - prev.level) 
+            / (now.time - prev.time) * 1000 * 3600;
+          battery_used_rate.add(used_rate);
+          prev = now;
+        }
+        return true;
+      }
+    }
+    return false;
+  }
 }
 
 class MyArrayAdapter extends ArrayAdapter<BatteryUsedRate>

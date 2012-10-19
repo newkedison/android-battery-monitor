@@ -4,13 +4,10 @@ import java.io.BufferedInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 
-import java.util.ListIterator;
-
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -29,10 +26,6 @@ import android.support.v4.app.NotificationCompat;
 
 public class MonitorService extends Service
 {
-  private BroadcastReceiver battery_changed_receiver 
-    = new BatteryChangedReceiver();
-  private boolean is_receiver_registed = false;
-  private FixFIFO<BatteryInfo> history = new FixFIFO<BatteryInfo>(FIFO_SIZE);
 
   void load_recently_history()
   {
@@ -163,29 +156,10 @@ public class MonitorService extends Service
 
   void update_history_list(BatteryInfo bi)
   {
-    history.add(bi);
-    if (need_update_list_view && adapter_battery_used_rate != null)
-    {
-      battery_used_rate.clear();
-      if (history.size() > 1)
-      {
-        ListIterator<BatteryInfo> it = history.Iterator();
-        BatteryInfo prev = it.next();
-        BatteryInfo now;
-        while(it.hasNext())
-        {
-          now = it.next();
-          BatteryUsedRate used_rate = new BatteryUsedRate();
-          used_rate.time = now.time;
-          used_rate.rate = (float)(now.level - prev.level) 
-            / (now.time - prev.time) * 1000 * 3600;
-          battery_used_rate.add(used_rate);
-          prev = now;
-        }
-      }
+    if (bi != null)
+      history.add(bi);
+    if (battery_info_to_battery_use_rate())
       adapter_battery_used_rate.notifyDataSetChanged();
-    }
-
   }
 
   @Override
@@ -295,7 +269,8 @@ public class MonitorService extends Service
     }
     m_builder.setSmallIcon(icon_id)
         .setContentTitle(String.format("Level: %02d%%", bi.level))
-        .setContentText("click to see more detail");
+        .setContentText("click to see more detail")
+        .setOngoing(true);
     NotificationManager nm = (NotificationManager)getSystemService(
         Context.NOTIFICATION_SERVICE);
     nm.notify(1, m_builder.build());
