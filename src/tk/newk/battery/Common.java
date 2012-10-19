@@ -63,6 +63,8 @@ public class Common
           now = it.next();
           BatteryUsedRate used_rate = new BatteryUsedRate();
           used_rate.time = now.time;
+          used_rate.level = prev.level;
+          used_rate.is_charging = now.is_charging;
           used_rate.rate = (float)(now.level - prev.level) 
             / (now.time - prev.time) * 1000 * 3600;
           battery_used_rate.add(used_rate);
@@ -79,6 +81,13 @@ class MyArrayAdapter extends ArrayAdapter<BatteryUsedRate>
 {
   private Context m_context;
   private List<BatteryUsedRate> m_data;
+  static class ViewHolder
+  {
+    public TextView lbl_time;
+    public TextView lbl_level;
+    public TextView lbl_charge_state;
+    public TextView lbl_rate;
+  }
   public MyArrayAdapter(Context context, List<BatteryUsedRate> data)
   {
     super(context, R.layout.list_item_small, data);
@@ -88,21 +97,37 @@ class MyArrayAdapter extends ArrayAdapter<BatteryUsedRate>
   @Override
   public View getView(int position, View convertView, ViewGroup parent)
   {
-    LayoutInflater inflater = (LayoutInflater) m_context
-      .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-    View rowView = inflater.inflate(R.layout.list_item_small, parent, false);
-    TextView lbl_time = (TextView) rowView.findViewById(R.id.lbl_time);
-    TextView lbl_rate = (TextView) rowView.findViewById(R.id.lbl_rate);
+    View row = convertView;
+    if (row == null)
+    {
+      LayoutInflater inflater = (LayoutInflater) m_context
+        .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+      row = inflater.inflate(R.layout.list_item_small, parent, false);
+      ViewHolder vh = new ViewHolder();
+      vh.lbl_time = (TextView)row.findViewById(R.id.lbl_time);
+      vh.lbl_level = (TextView)row.findViewById(R.id.lbl_level);
+      vh.lbl_charge_state = (TextView)row.findViewById( R.id.lbl_charge_state);
+      vh.lbl_rate = (TextView)row.findViewById(R.id.lbl_rate);
+      row.setTag(vh);
+    }
     BatteryUsedRate bur = m_data.get(position);
-    lbl_time.setText(format_ticket(bur.time, "yy-MM-dd HH:mm:ss"));
-    lbl_rate.setText(str(bur.rate, "0.00") + "%/h");
-    return rowView;
+    ViewHolder vh = (ViewHolder) row.getTag();
+    vh.lbl_time.setText(format_ticket(bur.time, "yy-MM-dd HH:mm:ss"));
+    vh.lbl_level.setText(str(bur.level) + "%");
+    if (bur.is_charging)
+      vh.lbl_charge_state.setText("charging");
+    else
+      vh.lbl_charge_state.setText("discharge");
+    vh.lbl_rate.setText(str(bur.rate, "0.00") + "%/h");
+    return row;
   }
 }
 
 class BatteryUsedRate
 {
   public long time;
+  public int level;
+  public boolean is_charging;
   public float rate;
 }
 

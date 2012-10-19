@@ -166,7 +166,7 @@ public class MonitorService extends Service
   public int onStartCommand(Intent intent, int flags, int start_id)
   {
     logv(this, "service is start");
-    if (intent.getBooleanExtra(
+    if (intent != null && intent.getBooleanExtra(
           Common.START_SERVICE_FROM_RECEIVER, false))
     {
       BatteryInfo bi = new BatteryInfo(intent);
