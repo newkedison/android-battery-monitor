@@ -4,6 +4,8 @@ import java.io.BufferedInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 
+import java.util.Locale;
+
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -14,7 +16,11 @@ import android.content.IntentFilter;
 
 import android.os.IBinder;
 
+import android.speech.tts.TextToSpeech;
+
 import android.support.v4.app.TaskStackBuilder;
+
+import android.widget.Toast;
 
 import static tk.newk.common.log.*;
 import static tk.newk.common.utils.*;
@@ -25,6 +31,7 @@ import static tk.newk.battery.Common.*;
 import android.support.v4.app.NotificationCompat;
 
 public class MonitorService extends Service
+  implements TextToSpeech.OnInitListener
 {
 
   void load_recently_history()
@@ -61,6 +68,8 @@ public class MonitorService extends Service
   {
     log_set_tag("battery");
     load_recently_history();
+    if (TTS == null)
+      TTS = new TextToSpeech(this, this);
     logv(this, "service is created");
   }
 
@@ -158,6 +167,7 @@ public class MonitorService extends Service
   {
     if (bi != null)
       history.add(bi);
+    logv(this, "history FIFO", str(history.size()));
     if (battery_info_to_battery_use_rate())
       adapter_battery_used_rate.notifyDataSetChanged();
   }
@@ -175,6 +185,10 @@ public class MonitorService extends Service
       update_history_list(bi);
       logd(this, "start to update notification");
       update_notification(bi);
+      if (!is_service_foreground && m_builder != null)
+      {
+        this.startForeground(1, m_builder.build());
+      }
     }
     else if (!is_receiver_registed)
     {
@@ -274,6 +288,22 @@ public class MonitorService extends Service
     NotificationManager nm = (NotificationManager)getSystemService(
         Context.NOTIFICATION_SERVICE);
     nm.notify(1, m_builder.build());
+  }
+
+  public void onInit(int initStatus) 
+  {
+    //check for successful instantiation
+    if (initStatus == TextToSpeech.SUCCESS) 
+    {
+      if(TTS != null 
+          && TTS.isLanguageAvailable(Locale.US) == TextToSpeech.LANG_AVAILABLE)
+        TTS.setLanguage(Locale.US);
+    }
+    else if (initStatus == TextToSpeech.ERROR) 
+    {
+      Toast.makeText(this, "Sorry! Text To Speech failed...", 
+          Toast.LENGTH_LONG).show();
+    }
   }
 }
 

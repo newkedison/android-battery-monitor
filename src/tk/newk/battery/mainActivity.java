@@ -7,6 +7,8 @@ import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
 
+import android.speech.tts.TextToSpeech;
+
 import android.view.View;
 
 import static tk.newk.common.log.*;
@@ -14,7 +16,7 @@ import static tk.newk.common.utils.*;
 
 import static tk.newk.battery.Common.*;
 
-public class mainActivity extends ListActivity
+public class mainActivity extends ListActivity 
 {
   /** Called when the activity is first created. */
   @Override
@@ -42,6 +44,11 @@ public class mainActivity extends ListActivity
         logexception(this, e);
       }
       logv(this, file_name, str(size));
+    }
+    if (!is_TTS_checked)
+    {
+      is_TTS_checked = true;
+      check_TTS_enable();
     }
   }
 
@@ -81,4 +88,34 @@ public class mainActivity extends ListActivity
     Intent intent = new Intent(this, MonitorService.class);
     stopService(intent);
   }
+
+  void check_TTS_enable()
+  {
+    Intent checkTTS = new Intent();
+    checkTTS.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
+    startActivityForResult(checkTTS, TTS_CHECK_ENABLED);
+  }
+
+  protected void onActivityResult(int requestCode, int resultCode, 
+      Intent data) 
+  {
+    if (requestCode == TTS_CHECK_ENABLED) 
+    {
+      if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) 
+      {
+        //the user has the necessary data - create the TTS
+//        myTTS = new TextToSpeech(this, this);
+        //do nothing here, because I will create the TTS in the service
+      }
+      else 
+      {
+        //no data - install it now
+        Intent installTTSIntent = new Intent();
+        installTTSIntent.setAction(
+            TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
+        startActivity(installTTSIntent);
+      }
+    }
+  }
+
 }

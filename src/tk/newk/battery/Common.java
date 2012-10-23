@@ -11,6 +11,8 @@ import android.content.Intent;
 
 import android.os.BatteryManager;
 
+import android.speech.tts.TextToSpeech;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +36,8 @@ public class Common
   final static int FIFO_SIZE = 200;
   //buffer how many recored before save the buffer data to real file
   final static int SAVE_TO_FILE_STEP = 20;
+  //uniqe ID for check TTS enabled
+  final static int TTS_CHECK_ENABLED = 0;
 
   static boolean is_receiver_registed = false;
   static BatteryInfo[] buffer_data = new BatteryInfo[HISTORY_FILE_RECORD_COUNT];
@@ -47,6 +51,10 @@ public class Common
   static BroadcastReceiver battery_changed_receiver 
     = new BatteryChangedReceiver();
   static FixFIFO<BatteryInfo> history = new FixFIFO<BatteryInfo>(FIFO_SIZE);
+  static boolean is_service_foreground = false;
+  static boolean is_TTS_checked = false;
+
+  static TextToSpeech TTS = null;
 
   static boolean battery_info_to_battery_use_rate()
   {
@@ -74,6 +82,12 @@ public class Common
       }
     }
     return false;
+  }
+
+  public static void say(String what)
+  {
+    if (TTS != null)
+      TTS.speak(what, TextToSpeech.QUEUE_FLUSH, null);
   }
 }
 
