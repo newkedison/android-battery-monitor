@@ -9,6 +9,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import android.media.AudioManager;
+
+import android.os.AsyncTask;
 import android.os.BatteryManager;
 
 import android.speech.tts.TextToSpeech;
@@ -20,7 +23,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-//import static tk.newk.common.log.*;
+import static tk.newk.common.log.*;
 import static tk.newk.common.utils.*;
 
 public class Common
@@ -55,6 +58,7 @@ public class Common
   static boolean is_TTS_checked = false;
 
   static TextToSpeech TTS = null;
+  static AudioManager audio_manager = null;
 
   static boolean battery_info_to_battery_use_rate()
   {
@@ -84,10 +88,60 @@ public class Common
     return false;
   }
 
+  public static int change_volume(int stream, int volume)
+  {
+    if (audio_manager != null)
+    {
+      int prev_volume = audio_manager.getStreamVolume(stream);
+      int max_volume = audio_manager.getStreamMaxVolume(stream);
+      if (volume > max_volume)
+        volume = max_volume;
+      audio_manager.setStreamVolume(stream, volume, 0);
+      logd("change_volume", "volume is change to ", str(volume));
+      return prev_volume;
+    }
+    return 0;
+  }
+
+  public static int change_volume(int stream, float scale)
+  {
+    if (audio_manager != null)
+    {
+      int max_volume = audio_manager.getStreamMaxVolume(stream);
+      return change_volume(stream, (int)(max_volume * scale));
+    }
+    return 0;
+  }
+
+
   public static void say(String what)
   {
     if (TTS != null)
-      TTS.speak(what, TextToSpeech.QUEUE_FLUSH, null);
+    {
+      new SpeakThread().execute(what);
+    }
+  }
+}
+
+class SpeakThread extends AsyncTask<String, Void, Boolean>
+{
+  @Override
+  protected Boolean doInBackground(String ... params)
+  {
+    if (Common.TTS == null)
+      return false;
+    int prev_volume = Common.change_volume(AudioManager.STREAM_MUSIC, 1.0f);
+    Common.TTS.speak(params[0], TextToSpeech.QUEUE_FLUSH, null);
+    try
+    {
+      Thread.sleep(5000, 0);
+    }
+    catch (Exception e)
+    {
+      logexception(this, e);
+    }
+    Common.change_volume(AudioManager.STREAM_MUSIC, prev_volume);
+    return true;
   }
 }
 

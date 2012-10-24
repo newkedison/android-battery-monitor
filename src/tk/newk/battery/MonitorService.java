@@ -14,6 +14,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
+import android.media.AudioManager;
+
 import android.os.IBinder;
 
 import android.speech.tts.TextToSpeech;
@@ -70,6 +72,7 @@ public class MonitorService extends Service
     load_recently_history();
     if (TTS == null)
       TTS = new TextToSpeech(this, this);
+    audio_manager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
     logv(this, "service is created");
   }
 
