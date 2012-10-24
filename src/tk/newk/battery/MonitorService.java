@@ -183,14 +183,21 @@ public class MonitorService extends Service
           Common.START_SERVICE_FROM_RECEIVER, false))
     {
       BatteryInfo bi = new BatteryInfo(intent);
-      logd(this, bi.toString());
-      save_history(bi);
-      update_history_list(bi);
-      logd(this, "start to update notification");
-      update_notification(bi);
-      if (!is_service_foreground && m_builder != null)
+      logv(this, bi.toString());
+      if (history.size() > 0 && bi.level == history.get(0).level)
       {
-        this.startForeground(1, m_builder.build());
+        logd(this, "battery level no change, ignored");
+      }
+      else
+      {
+        save_history(bi);
+        update_history_list(bi);
+        logv(this, "start to update notification");
+        update_notification(bi);
+        if (!is_service_foreground && m_builder != null)
+        {
+          this.startForeground(1, m_builder.build());
+        }
       }
     }
     else if (!is_receiver_registed)
@@ -291,8 +298,25 @@ public class MonitorService extends Service
     NotificationManager nm = (NotificationManager)getSystemService(
         Context.NOTIFICATION_SERVICE);
     nm.notify(1, m_builder.build());
+    if (bi.level < 50 && bi.level % 10 == 0)
+    {
+      say(String.format("battery level is %d percent", bi.level));
+    }
+    if (bi.level == 25 && power_supply_state == POWER_SUPPLY_STATE_DISCONNECTED)
+    {
+      say("battery level is low, please charge");
+    }
+    if (bi.level == 15 && power_supply_state == POWER_SUPPLY_STATE_DISCONNECTED)
+    {
+      say("battery level is very low, please charge immediately");
+    }
+    if (bi.level == 100 && power_supply_state == POWER_SUPPLY_STATE_CONNECTED)
+    {
+      say("I am full");
+    }
   }
 
+  // interface TextToSpeech.OnInitListener
   public void onInit(int initStatus) 
   {
     //check for successful instantiation

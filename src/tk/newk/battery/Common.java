@@ -41,6 +41,10 @@ public class Common
   final static int SAVE_TO_FILE_STEP = 20;
   //uniqe ID for check TTS enabled
   final static int TTS_CHECK_ENABLED = 0;
+  //power supply state
+  final static int POWER_SUPPLY_STATE_UNKNOWN = -1;
+  final static int POWER_SUPPLY_STATE_DISCONNECTED = 0;
+  final static int POWER_SUPPLY_STATE_CONNECTED = 1;
 
   static boolean is_receiver_registed = false;
   static BatteryInfo[] buffer_data = new BatteryInfo[HISTORY_FILE_RECORD_COUNT];
@@ -56,6 +60,7 @@ public class Common
   static FixFIFO<BatteryInfo> history = new FixFIFO<BatteryInfo>(FIFO_SIZE);
   static boolean is_service_foreground = false;
   static boolean is_TTS_checked = false;
+  static int power_supply_state = POWER_SUPPLY_STATE_UNKNOWN;
 
   static TextToSpeech TTS = null;
   static AudioManager audio_manager = null;
@@ -130,7 +135,7 @@ class SpeakThread extends AsyncTask<String, Void, Boolean>
   {
     if (Common.TTS == null)
       return false;
-    int prev_volume = Common.change_volume(AudioManager.STREAM_MUSIC, 1.0f);
+    int prev_volume = Common.change_volume(AudioManager.STREAM_MUSIC, 0.7f);
     Common.TTS.speak(params[0], TextToSpeech.QUEUE_FLUSH, null);
     try
     {
@@ -151,10 +156,8 @@ class MyArrayAdapter extends ArrayAdapter<BatteryUsedRate>
   private List<BatteryUsedRate> m_data;
   static class ViewHolder
   {
-    public TextView lbl_time;
-    public TextView lbl_level;
-    public TextView lbl_charge_state;
-    public TextView lbl_rate;
+    public TextView lbl_left;
+    public TextView lbl_right;
   }
   public MyArrayAdapter(Context context, List<BatteryUsedRate> data)
   {
@@ -172,21 +175,20 @@ class MyArrayAdapter extends ArrayAdapter<BatteryUsedRate>
         .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       row = inflater.inflate(R.layout.list_item_small, parent, false);
       ViewHolder vh = new ViewHolder();
-      vh.lbl_time = (TextView)row.findViewById(R.id.lbl_time);
-      vh.lbl_level = (TextView)row.findViewById(R.id.lbl_level);
-      vh.lbl_charge_state = (TextView)row.findViewById( R.id.lbl_charge_state);
-      vh.lbl_rate = (TextView)row.findViewById(R.id.lbl_rate);
+      vh.lbl_left = (TextView)row.findViewById(R.id.lbl_left);
+      vh.lbl_right = (TextView)row.findViewById(R.id.lbl_right);
       row.setTag(vh);
     }
     BatteryUsedRate bur = m_data.get(position);
     ViewHolder vh = (ViewHolder) row.getTag();
-    vh.lbl_time.setText(format_ticket(bur.time, "yy-MM-dd HH:mm:ss"));
-    vh.lbl_level.setText(str(bur.level) + "%");
+    String charge_state;
     if (bur.is_charging)
-      vh.lbl_charge_state.setText("charging");
+      charge_state = "charging";
     else
-      vh.lbl_charge_state.setText("discharge");
-    vh.lbl_rate.setText(str(bur.rate, "0.00") + "%/h");
+      charge_state = "discharge";
+    vh.lbl_left.setText(String.format("%s %3d%% %10s", 
+        format_ticket(bur.time, "yy-MM-dd HH:mm:ss"), bur.level, charge_state));
+    vh.lbl_right.setText(str(bur.rate, "0.00") + "%/h");
     return row;
   }
 }
@@ -251,14 +253,28 @@ class BatteryInfo
   public int state;
   public boolean is_charging;
   public int level;
+  public int power_state;
   public long time;
+  private boolean judge_charging(int _state, int _power)
+  {
+    if (_power != Common.POWER_SUPPLY_STATE_UNKNOWN)
+    {
+      is_charging = (_power == Common.POWER_SUPPLY_STATE_CONNECTED);
+    }
+    else
+    {
+      is_charging = (_state == BatteryManager.BATTERY_STATUS_CHARGING 
+          || _state == BatteryManager.BATTERY_STATUS_FULL);
+    }
+    return is_charging;
+  }
   public BatteryInfo(Intent intent)
   {
     if (intent != null)
     {
       state = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
-      is_charging = state == BatteryManager.BATTERY_STATUS_CHARGING ||
-                            state == BatteryManager.BATTERY_STATUS_FULL;
+      power_state = Common.power_supply_state;
+      judge_charging(state, power_state);
       level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
 //      int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
     }
@@ -266,8 +282,8 @@ class BatteryInfo
   }
   public String toString()
   {
-    String ret = String.format("[%s]State=%d, Level=%d, ", 
-        format_ticket(time, "yy-MM-dd HH:mm:ss"), state, level);
+    String ret = String.format("[%s]State=%d, Level=%d, Power=%d", 
+        format_ticket(time, "yy-MM-dd HH:mm:ss"), state, level, power_state);
     if (is_charging)
       ret += "Charging";
     return ret;
@@ -280,6 +296,7 @@ class BatteryInfo
     }
     ret[9] = (byte)(state & 0xFF);
     ret[10] = (byte)(level & 0xFF);
+    ret[11] = (byte)(power_state & 0xFF);
     add_crc(ret);
     return ret;
   }
@@ -293,9 +310,9 @@ class BatteryInfo
         time = (time << 8) + (data[i] & 0xff);
       }
       state = data[9];
-      is_charging = state == BatteryManager.BATTERY_STATUS_CHARGING ||
-                            state == BatteryManager.BATTERY_STATUS_FULL;
       level = data[10];
+      power_state = data[11];
+      judge_charging(state, power_state);
     }
   }
 }
