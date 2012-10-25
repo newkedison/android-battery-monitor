@@ -5,11 +5,16 @@ import java.io.FileInputStream;
 import android.app.ListActivity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+
+import android.preference.PreferenceManager;
 
 import android.speech.tts.TextToSpeech;
 
-import android.view.View;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 import static tk.newk.common.log.*;
 import static tk.newk.common.utils.*;
@@ -20,7 +25,8 @@ public class mainActivity extends ListActivity
 {
   /** Called when the activity is first created. */
   @Override
-  public void onCreate(Bundle savedInstanceState) {
+  public void onCreate(Bundle savedInstanceState) 
+  {
     super.onCreate(savedInstanceState);
     logv(this, "ativity is created");
     setContentView(R.layout.main);
@@ -50,6 +56,15 @@ public class mainActivity extends ListActivity
       is_TTS_checked = true;
       check_TTS_enable();
     }
+    SharedPreferences shared_pref 
+      = PreferenceManager.getDefaultSharedPreferences(this);
+    boolean service_enable 
+      = shared_pref.getBoolean("pref_service_enable", true);
+    if (service_enable)
+    {
+      Intent service_intent = new Intent(this, MonitorService.class);
+      startService(service_intent);
+    }
   }
 
   @Override
@@ -75,18 +90,6 @@ public class mainActivity extends ListActivity
   {
     super.onStop();
     logv(this, "activity is stop");
-  }
-
-  public void start_service(View v)
-  {
-    Intent intent = new Intent(this, MonitorService.class);
-    startService(intent);
-  }
-
-  public void stop_service(View v)
-  {
-    Intent intent = new Intent(this, MonitorService.class);
-    stopService(intent);
   }
 
   void check_TTS_enable()
@@ -118,4 +121,31 @@ public class mainActivity extends ListActivity
     }
   }
 
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu)
+  {
+    MenuInflater inflater = getMenuInflater();
+    inflater.inflate(R.menu.main, menu);
+    return true;
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item)
+  {
+    switch (item.getItemId())
+    {
+//      case R.id.menu_curve:
+//        return true;
+      case R.id.menu_setting:
+        logv(this, "menu_setting is click");
+        Intent open_setting = new Intent(this, SettingsActivity.class);
+        startActivity(open_setting);
+        return true;
+
+      default:
+        return super.onOptionsItemSelected(item);
+    }
+  }
 }
+
+// vim: fdm=syntax fdl=1 fdn=2

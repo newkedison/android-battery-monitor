@@ -3,8 +3,10 @@ package tk.newk.battery;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 
-import android.widget.Toast;
+import android.preference.PreferenceManager;
+
 import static tk.newk.common.log.*;
 
 public class BootCompletedReceiver extends BroadcastReceiver
@@ -13,8 +15,14 @@ public class BootCompletedReceiver extends BroadcastReceiver
   public void onReceive(Context context, Intent intent)
   {
     logv(this, "BootCompletedReceiver receive broadcast");
-    Toast.makeText(context, "Boot Completed", 10);
-    Intent service_intent = new Intent(context, MonitorService.class);
-    context.startService(service_intent);
+    SharedPreferences shared_pref 
+      = PreferenceManager.getDefaultSharedPreferences(context);
+    boolean service_enable 
+      = shared_pref.getBoolean("pref_service_enable", true);
+    if (service_enable)
+    {
+      Intent service_intent = new Intent(context, MonitorService.class);
+      context.startService(service_intent);
+    }
   }
 }

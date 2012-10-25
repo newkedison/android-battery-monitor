@@ -184,6 +184,16 @@ public class MonitorService extends Service
     {
       BatteryInfo bi = new BatteryInfo(intent);
       logv(this, bi.toString());
+      if (!is_notification_init)
+      {
+        update_notification(bi);
+        if (!is_service_foreground && m_builder != null)
+        {
+          this.startForeground(ID_NOTIFICATION, m_builder.build());
+          is_service_foreground = true;
+        }
+        is_notification_init = true;
+      }
       if (history.size() > 0 && bi.level == history.get(0).level)
       {
         logd(this, "battery level no change, ignored");
@@ -196,11 +206,12 @@ public class MonitorService extends Service
         update_notification(bi);
         if (!is_service_foreground && m_builder != null)
         {
-          this.startForeground(1, m_builder.build());
+          this.startForeground(ID_NOTIFICATION, m_builder.build());
+          is_service_foreground = true;
         }
       }
     }
-    else if (!is_receiver_registed)
+    if (!is_receiver_registed)
     {
       logd(this, "registing receiver");
       this.registerReceiver(battery_changed_receiver, 
@@ -251,15 +262,22 @@ public class MonitorService extends Service
   public void onDestroy()
   {
     if (is_receiver_registed)
+    {
       unregisterReceiver(battery_changed_receiver);
+      is_receiver_registed = false;
+    }
     if (buffer_data_used_size > recent_file_record_count)
     {
       logd("saving unsaved record before service stopped");
       append_records_to_file(FILE_NAME_RECENT, recent_file_record_count, -1);
     }
+    TTS = null;
+    stopForeground(false);
+    is_service_foreground = false;
     NotificationManager nm = (NotificationManager)getSystemService(
         Context.NOTIFICATION_SERVICE);
     nm.cancelAll();
+    is_notification_init = false;
     logw(this, "service is Destroy");
   }
 
@@ -278,7 +296,6 @@ public class MonitorService extends Service
 
   void update_notification(BatteryInfo bi)
   {
-    int icon_id = get_icon_id(bi.level);
     if (m_builder == null)
     {
       m_builder = new NotificationCompat.Builder(this);
@@ -291,28 +308,34 @@ public class MonitorService extends Service
           PendingIntent.FLAG_UPDATE_CURRENT);
       m_builder.setContentIntent(pending_intent);
     }
-    m_builder.setSmallIcon(icon_id)
-        .setContentTitle(String.format("Level: %02d%%", bi.level))
-        .setContentText("click to see more detail")
-        .setOngoing(true);
-    NotificationManager nm = (NotificationManager)getSystemService(
-        Context.NOTIFICATION_SERVICE);
-    nm.notify(1, m_builder.build());
-    if (bi.level < 50 && bi.level % 10 == 0)
+    if (bi != null)
     {
-      say(String.format("battery level is %d percent", bi.level));
-    }
-    if (bi.level == 25 && power_supply_state == POWER_SUPPLY_STATE_DISCONNECTED)
-    {
-      say("battery level is low, please charge");
-    }
-    if (bi.level == 15 && power_supply_state == POWER_SUPPLY_STATE_DISCONNECTED)
-    {
-      say("battery level is very low, please charge immediately");
-    }
-    if (bi.level == 100 && power_supply_state == POWER_SUPPLY_STATE_CONNECTED)
-    {
-      say("I am full");
+      int icon_id = get_icon_id(bi.level);
+      m_builder.setSmallIcon(icon_id)
+          .setContentTitle(String.format("Level: %02d%%", bi.level))
+          .setContentText("click to see more detail")
+          .setOngoing(true);
+      NotificationManager nm = (NotificationManager)getSystemService(
+          Context.NOTIFICATION_SERVICE);
+      nm.notify(ID_NOTIFICATION, m_builder.build());
+      if (bi.level < 50 && bi.level % 10 == 0)
+      {
+        say(String.format("battery level is %d percent", bi.level));
+      }
+      if (bi.level == 25 
+          && power_supply_state == POWER_SUPPLY_STATE_DISCONNECTED)
+      {
+        say("battery level is low, please charge");
+      }
+      if (bi.level == 15 
+          && power_supply_state == POWER_SUPPLY_STATE_DISCONNECTED)
+      {
+        say("battery level is very low, please charge immediately");
+      }
+      if (bi.level == 100 && power_supply_state == POWER_SUPPLY_STATE_CONNECTED)
+      {
+        say("I am full");
+      }
     }
   }
 

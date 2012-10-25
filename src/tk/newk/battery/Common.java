@@ -45,6 +45,7 @@ public class Common
   final static int POWER_SUPPLY_STATE_UNKNOWN = -1;
   final static int POWER_SUPPLY_STATE_DISCONNECTED = 0;
   final static int POWER_SUPPLY_STATE_CONNECTED = 1;
+  final static int ID_NOTIFICATION = 0;
 
   static boolean is_receiver_registed = false;
   static BatteryInfo[] buffer_data = new BatteryInfo[HISTORY_FILE_RECORD_COUNT];
@@ -60,6 +61,7 @@ public class Common
   static FixFIFO<BatteryInfo> history = new FixFIFO<BatteryInfo>(FIFO_SIZE);
   static boolean is_service_foreground = false;
   static boolean is_TTS_checked = false;
+  static boolean is_notification_init = false;
   static int power_supply_state = POWER_SUPPLY_STATE_UNKNOWN;
 
   static TextToSpeech TTS = null;

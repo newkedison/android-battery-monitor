@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+  <CheckBoxPreference
+      android:key="pref_service_enable"
+      android:title="@string/pref_service_enable"
+      android:summary="@string/pref_sum_service_enabled"
+      android:defaultValue="true" />
+  <EditTextPreference
+      android:key="pref_list_size"
+      android:title="@string/pref_list_size"
+      android:summary="@string/pref_sum_list_size"
+      android:defaultValue="200"
+      android:inputType="number" />
+</PreferenceScreen>

@@ -1,11 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="hello">Hello World, mainActivity!</string>
     <string name="app_name">battery</string>
+    <string name="activity_title_main">Battery Monitor</string>
+    <string name="activity_title_setting">Battery Monitor Setting</string>
     <string name="lbl_battery_level">Battery Level:</string>
     <string name="string_no_data">no data now</string>
     <string name="btn_start_service">Start</string>
     <string name="btn_stop_service">Stop</string>
+    <string name="menu_curve">Curve</string>
+    <string name="menu_setting">Setting</string>
+    <string name="pref_service_enable">Enable Service</string>
+    <string name="pref_sum_service_enabled">Service is enabled</string>
+    <string name="pref_sum_service_disabled">Service is disabled</string>
+    <string name="pref_list_size">List Size</string>
+    <string name="pref_sum_list_size">Range: 50~500 Default: 200</string>
 
 </resources>
