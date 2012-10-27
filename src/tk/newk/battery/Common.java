@@ -35,17 +35,18 @@ public class Common
   //how many record store in a history file
   final static int HISTORY_FILE_RECORD_COUNT = 1000;
   final static int RECORD_LENGTH = 16;
-  //the size of FIFO array, recent data is save in this array
-  final static int FIFO_SIZE = 200;
   //buffer how many recored before save the buffer data to real file
   final static int SAVE_TO_FILE_STEP = 20;
   //uniqe ID for check TTS enabled
   final static int TTS_CHECK_ENABLED = 0;
   //power supply state
-  final static int POWER_SUPPLY_STATE_UNKNOWN = -1;
-  final static int POWER_SUPPLY_STATE_DISCONNECTED = 0;
-  final static int POWER_SUPPLY_STATE_CONNECTED = 1;
+  final static int POWER_SUPPLY_STATE_UNKNOWN = 0;
+  final static int POWER_SUPPLY_STATE_DISCONNECTED = 1;
+  final static int POWER_SUPPLY_STATE_CONNECTED = 2;
   final static int ID_NOTIFICATION = 0;
+  //preference key
+  final static String PREF_KEY_SERVICE_ENABLE = "pref_service_enable";
+  final static String PREF_KEY_LIST_SIZE = "pref_list_size";
 
   static boolean is_receiver_registed = false;
   static BatteryInfo[] buffer_data = new BatteryInfo[HISTORY_FILE_RECORD_COUNT];
@@ -58,7 +59,7 @@ public class Common
   static boolean need_update_list_view = false;
   static BroadcastReceiver battery_changed_receiver 
     = new BatteryChangedReceiver();
-  static FixFIFO<BatteryInfo> history = new FixFIFO<BatteryInfo>(FIFO_SIZE);
+  static FixFIFO<BatteryInfo> FIFO_history = null;
   static boolean is_service_foreground = false;
   static boolean is_TTS_checked = false;
   static boolean is_notification_init = false;
@@ -69,12 +70,13 @@ public class Common
 
   static boolean battery_info_to_battery_use_rate()
   {
-    if (need_update_list_view && adapter_battery_used_rate != null)
+    if (need_update_list_view && FIFO_history != null
+        && adapter_battery_used_rate != null)
     {
       battery_used_rate.clear();
-      if (history.size() > 1)
+      if (FIFO_history.size() > 1)
       {
-        ListIterator<BatteryInfo> it = history.Iterator();
+        ListIterator<BatteryInfo> it = FIFO_history.Iterator();
         BatteryInfo prev = it.next();
         BatteryInfo now;
         while(it.hasNext())
@@ -215,12 +217,24 @@ class FixFIFO<T>
     m_size = size;
     m_queue = new LinkedList<T>();
   }
+  public boolean resize(int new_size)
+  {
+    if (new_size < 1)
+      return false;
+    if (new_size < m_size)
+    {
+      if (new_size < m_queue.size())
+        m_queue = m_queue.subList(0, new_size);
+    }
+    m_size = new_size;
+    return true;
+  }
   public void add(T o)
   {
     m_queue.add(0, o);
     if (m_queue.size() > m_size)
     {
-      //remove nearly 1/5 of all elements from the list, FIFO
+      //remove nearly 1/5 of all elements from the list, FIFO.
       //because insert to the first, wo must delete from the end of list
       int delete_count = (m_size + 4) / 5;
       for (int i = 0; i < delete_count; ++i)

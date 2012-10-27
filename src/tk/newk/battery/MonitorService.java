@@ -13,10 +13,13 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 
 import android.media.AudioManager;
 
 import android.os.IBinder;
+
+import android.preference.PreferenceManager;
 
 import android.speech.tts.TextToSpeech;
 
@@ -73,6 +76,14 @@ public class MonitorService extends Service
     if (TTS == null)
       TTS = new TextToSpeech(this, this);
     audio_manager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+    if (FIFO_history == null)
+    {
+      SharedPreferences shared_pref 
+        = PreferenceManager.getDefaultSharedPreferences(this);
+      int list_size = Integer.parseInt(shared_pref.getString(
+            PREF_KEY_LIST_SIZE, "200"));
+      FIFO_history = new FixFIFO<BatteryInfo>(list_size);
+    }
     logv(this, "service is created");
   }
 
@@ -168,9 +179,11 @@ public class MonitorService extends Service
 
   void update_history_list(BatteryInfo bi)
   {
-    if (bi != null)
-      history.add(bi);
-    logv(this, "history FIFO", str(history.size()));
+    if (bi != null && FIFO_history != null)
+    {
+      FIFO_history.add(bi);
+      logv(this, "history FIFO", str(FIFO_history.size()));
+    }
     if (battery_info_to_battery_use_rate())
       adapter_battery_used_rate.notifyDataSetChanged();
   }
@@ -194,7 +207,8 @@ public class MonitorService extends Service
         }
         is_notification_init = true;
       }
-      if (history.size() > 0 && bi.level == history.get(0).level)
+      if (FIFO_history != null && FIFO_history.size() > 0 && bi.level 
+          == FIFO_history.get(0).level)
       {
         logd(this, "battery level no change, ignored");
       }
