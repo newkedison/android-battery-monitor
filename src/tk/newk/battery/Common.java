@@ -74,7 +74,7 @@ public class Common
         && adapter_battery_used_rate != null)
     {
       battery_used_rate.clear();
-      if (FIFO_history.size() > 1)
+      if (FIFO_history.used_size() > 1)
       {
         ListIterator<BatteryInfo> it = FIFO_history.Iterator();
         BatteryInfo prev = it.next();
@@ -237,15 +237,20 @@ class FixFIFO<T>
       //remove nearly 1/5 of all elements from the list, FIFO.
       //because insert to the first, wo must delete from the end of list
       int delete_count = (m_size + 4) / 5;
+      logd(this, "begin to delete items form FIFO", str(delete_count));
       for (int i = 0; i < delete_count; ++i)
       {
         m_queue.remove(m_queue.size() - 1);
       }
     }
   }
-  public int size()
+  public int used_size()
   {
     return m_queue.size();
+  }
+  public int capacity()
+  {
+    return m_size;
   }
   public T get(int i)
   {

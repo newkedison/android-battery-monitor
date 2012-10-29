@@ -182,7 +182,8 @@ public class MonitorService extends Service
     if (bi != null && FIFO_history != null)
     {
       FIFO_history.add(bi);
-      logv(this, "history FIFO", str(FIFO_history.size()));
+      logv(this, "history FIFO", str(FIFO_history.used_size()), 
+          str(FIFO_history.capacity()));
     }
     if (battery_info_to_battery_use_rate())
       adapter_battery_used_rate.notifyDataSetChanged();
@@ -207,8 +208,8 @@ public class MonitorService extends Service
         }
         is_notification_init = true;
       }
-      if (FIFO_history != null && FIFO_history.size() > 0 && bi.level 
-          == FIFO_history.get(0).level)
+      if (FIFO_history != null && FIFO_history.used_size() > 0 
+          && bi.level == FIFO_history.get(0).level)
       {
         logd(this, "battery level no change, ignored");
       }
@@ -218,7 +219,7 @@ public class MonitorService extends Service
         update_history_list(bi);
         logv(this, "start to update notification");
         update_notification(bi);
-        if (!is_service_foreground && m_builder != null)
+        if (/*!is_service_foreground && */m_builder != null)
         {
           this.startForeground(ID_NOTIFICATION, m_builder.build());
           is_service_foreground = true;

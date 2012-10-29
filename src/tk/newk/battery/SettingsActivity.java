@@ -54,7 +54,7 @@ public class SettingsActivity extends PreferenceActivity
   public void onSharedPreferenceChanged(SharedPreferences sharePreferences, 
       String key)
   {
-    logw(this, "key", key);
+    logv(this, "key", key);
     if (key.equals(PREF_KEY_SERVICE_ENABLE))
     {
       Preference pref = findPreference(key);
@@ -91,7 +91,7 @@ public class SettingsActivity extends PreferenceActivity
       Preference pref = findPreference(key);
       pref.setTitle(String.format(
             getString(R.string.pref_list_size), list_size));
-      logw(this, "list_size change to", str(list_size));
+      logv(this, "list_size change to", str(list_size));
     }
   }
 }
