@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/svMain"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:scrollbars="vertical" >
+  <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:tools="http://schemas.android.com/tools"
+      android:layout_width="fill_parent"
+      android:layout_height="fill_parent"
+      android:orientation="vertical">
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="horizontal">
+      <Button
+          android:text="Verbose"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:onClick="update_log_verbose" />
+      <Button
+          android:text="Debug"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:onClick="update_log_debug" />
+      <Button
+          android:text="Info"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:onClick="update_log_info" />
+      <Button
+          android:text="Warning"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:onClick="update_log_warning" />
+    </LinearLayout>
+    <TextView android:id="@+id/lbl_log"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" />
+  </LinearLayout>
+</ScrollView>

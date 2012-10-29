@@ -136,6 +136,10 @@ public class mainActivity extends ListActivity
     {
 //      case R.id.menu_curve:
 //        return true;
+      case R.id.menu_log:
+        Intent open_log = new Intent(this, LogActivity.class);
+        startActivity(open_log);
+        return true;
       case R.id.menu_setting:
         logv(this, "menu_setting is click");
         Intent open_setting = new Intent(this, SettingsActivity.class);
