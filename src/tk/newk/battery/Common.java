@@ -74,35 +74,6 @@ public class Common
   static SharedPreferences global_setting = null;
   static Context service_context = null;
 
-//  static boolean battery_info_to_battery_use_rate()
-//  {
-//    if (need_update_list_view && FIFO_history != null
-//        && adapter_battery_used_rate != null)
-//    {
-//      battery_used_rate.clear();
-//      if (FIFO_history.used_size() > 1)
-//      {
-//        ListIterator<BatteryInfo> it = FIFO_history.Iterator();
-//        BatteryInfo prev = it.next();
-//        BatteryInfo now;
-//        while(it.hasNext())
-//        {
-//          now = it.next();
-//          BatteryUsedRate used_rate = new BatteryUsedRate();
-//          used_rate.time = now.time;
-//          used_rate.level = prev.level;
-//          used_rate.is_charging = now.is_charging;
-//          used_rate.rate = (float)(now.level - prev.level) 
-//            / (now.time - prev.time) * 1000 * 3600;
-//          battery_used_rate.add(used_rate);
-//          prev = now;
-//        }
-//        return true;
-//      }
-//    }
-//    return false;
-//  }
-
   private static class _read_buffer
   {
     public _read_buffer()
@@ -203,7 +174,7 @@ public class Common
             bi = bi_next;
           else
             bi = read_buffer.get();
-          logv("bi", bi.toString());
+//          logv("bi", bi.toString());
           while (bur.time > bi.time)
           {
             calendar.add(Calendar.MINUTE, -interval);
@@ -211,9 +182,9 @@ public class Common
 //            calendar.add(Calendar.SECOND, -interval);
             bur.time = calendar.getTime().getTime();
           }
-          logv("bur.time", format_ticket(bur.time, "yy-MM-dd HH:mm:ss"));
+//          logv("bur.time", format_ticket(bur.time, "yy-MM-dd HH:mm:ss"));
           bi_next = read_buffer.get();
-          logv("bi_next", bi_next.toString());
+//          logv("bi_next", bi_next.toString());
           while (bi_next.time >= bur.time)
           {
             bi = bi_next;
@@ -228,13 +199,13 @@ public class Common
             (float)(bi.level - bi_next.level) * (bur.time - bi_next.time)
             / (bi.time - bi_next.time) 
             + bi_next.level;
-          logv("parse", str(list_index), format_ticket(bur.time, "yy-MM-dd HH:mm:ss"), str(levels[list_index]), str(bi.level), str(bi_next.level), str(bur.time), str(bi_next.time), str(bi.time), str(bi_next.time), str(bi_next.level));
+//          logv("parse", str(list_index), format_ticket(bur.time, "yy-MM-dd HH:mm:ss"), str(levels[list_index]), str(bi.level), str(bi_next.level), str(bur.time), str(bi_next.time), str(bi.time), str(bi_next.time), str(bi_next.level));
           if (list_index > 0)
           {
             bur_prev = battery_used_rate.get(list_index - 1);
             bur_prev.rate = (levels[list_index - 1] - levels[list_index]) 
               / (bur_prev.time - bur.time) * 3600L * 1000L;
-            logv("parse", str(bur_prev.rate));
+//            logv("parse", str(bur_prev.rate));
           }
           ++list_index;
         }
@@ -290,16 +261,16 @@ public class Common
     if (latest_history_index >= 0)
       return latest_history_index;
     String[] file_name_list = service_context.fileList();
-    int index = 0;
-    int i = 0;
+    int index = -1;
     String file_name;
     boolean is_found;
     int ret = index;
     do
     {
+      ++index;
       file_name = String.format(FILE_NAME_HISTORY, index);
       is_found = false;
-      for (i = 0; i < file_name_list.length; ++i)
+      for (int i = 0; i < file_name_list.length; ++i)
       {
         if (file_name.equals(file_name_list[i]))
         {
@@ -308,7 +279,6 @@ public class Common
           break;
         }
       }
-      ++index;
     }while(is_found);
     return ret;
   }
@@ -372,7 +342,7 @@ class MyArrayAdapter extends ArrayAdapter<BatteryUsedRate>
       charge_state = "charging";
     else
       charge_state = "discharge";
-    vh.lbl_left.setText(String.format("%s %3d%% %10s", 
+    vh.lbl_left.setText(String.format("%3d %s %4.1f%% %10s", position + 1, 
         format_ticket(bur.time, "yy-MM-dd HH:mm:ss"), bur.level, charge_state));
     vh.lbl_right.setText(str(bur.rate, "0.00") + "%/h");
     return row;
@@ -382,7 +352,7 @@ class MyArrayAdapter extends ArrayAdapter<BatteryUsedRate>
 class BatteryUsedRate
 {
   public long time;
-  public int level;
+  public float level;
   public boolean is_charging;
   public float rate;
 }
@@ -523,3 +493,5 @@ class BatteryInfo
     }
   }
 }
+
+// vim: fdm=syntax fdl=1 fdn=2
