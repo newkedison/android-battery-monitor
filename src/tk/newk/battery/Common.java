@@ -1,6 +1,11 @@
 package tk.newk.battery;
 
+import java.io.BufferedInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -8,6 +13,7 @@ import java.util.ListIterator;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 
 import android.media.AudioManager;
 
@@ -35,8 +41,6 @@ public class Common
   //how many record store in a history file
   final static int HISTORY_FILE_RECORD_COUNT = 1000;
   final static int RECORD_LENGTH = 16;
-  //buffer how many recored before save the buffer data to real file
-  final static int SAVE_TO_FILE_STEP = 20;
   //uniqe ID for check TTS enabled
   final static int TTS_CHECK_ENABLED = 0;
   //power supply state
@@ -47,11 +51,11 @@ public class Common
   //preference key
   final static String PREF_KEY_SERVICE_ENABLE = "pref_service_enable";
   final static String PREF_KEY_LIST_SIZE = "pref_list_size";
+  final static String PREF_KEY_INTERVAL = "pref_interval";
 
   static boolean is_receiver_registed = false;
   static BatteryInfo[] buffer_data = new BatteryInfo[HISTORY_FILE_RECORD_COUNT];
   static int buffer_data_used_size = 0;
-  static int recent_file_record_count = 0;
   static int latest_history_index = -1;
   static MyArrayAdapter adapter_battery_used_rate = null;
   static ArrayList<BatteryUsedRate> battery_used_rate
@@ -59,7 +63,6 @@ public class Common
   static boolean need_update_list_view = false;
   static BroadcastReceiver battery_changed_receiver 
     = new BatteryChangedReceiver();
-  static FixFIFO<BatteryInfo> FIFO_history = null;
   static boolean is_service_foreground = false;
   static boolean is_TTS_checked = false;
   static boolean is_notification_init = false;
@@ -68,31 +71,181 @@ public class Common
   static TextToSpeech TTS = null;
   static AudioManager audio_manager = null;
 
-  static boolean battery_info_to_battery_use_rate()
+  static SharedPreferences global_setting = null;
+  static Context service_context = null;
+
+//  static boolean battery_info_to_battery_use_rate()
+//  {
+//    if (need_update_list_view && FIFO_history != null
+//        && adapter_battery_used_rate != null)
+//    {
+//      battery_used_rate.clear();
+//      if (FIFO_history.used_size() > 1)
+//      {
+//        ListIterator<BatteryInfo> it = FIFO_history.Iterator();
+//        BatteryInfo prev = it.next();
+//        BatteryInfo now;
+//        while(it.hasNext())
+//        {
+//          now = it.next();
+//          BatteryUsedRate used_rate = new BatteryUsedRate();
+//          used_rate.time = now.time;
+//          used_rate.level = prev.level;
+//          used_rate.is_charging = now.is_charging;
+//          used_rate.rate = (float)(now.level - prev.level) 
+//            / (now.time - prev.time) * 1000 * 3600;
+//          battery_used_rate.add(used_rate);
+//          prev = now;
+//        }
+//        return true;
+//      }
+//    }
+//    return false;
+//  }
+
+  private static class _read_buffer
   {
-    if (need_update_list_view && FIFO_history != null
+    public _read_buffer()
+    {
+      cursor = buffer_data_used_size - 1;
+      read_history_index = find_latest_history_index();
+    }
+    public BatteryInfo get() throws FileNotFoundException
+    {
+      if (cursor >= 0)
+      {
+        --cursor;
+        if (read_from_file == null)
+          return buffer_data[cursor + 1];
+        else
+          return read_from_file[cursor + 1];
+      }
+      else
+      {
+        if (read_history_index >= 0)
+        {
+          read_from_file = new BatteryInfo[HISTORY_FILE_RECORD_COUNT];
+          InputStream is = null;
+          int read_len;
+          int i = 0;
+          byte[] buf = new byte[RECORD_LENGTH];
+          try
+          {
+            is = new BufferedInputStream(service_context.openFileInput(
+                  String.format(FILE_NAME_HISTORY, read_history_index)));
+            do
+            {
+              read_len = is.read(buf, 0, RECORD_LENGTH);
+              if (read_len == RECORD_LENGTH)
+              {
+                read_from_file[i] = new BatteryInfo(buf);
+                ++i;
+              }
+            }while(read_len > 0);
+            is.close();
+          }
+          catch (Exception e)
+          {
+            logexception(this, e);
+            throw new FileNotFoundException();
+          }
+          if (i != HISTORY_FILE_RECORD_COUNT)
+            throw new FileNotFoundException();
+          cursor = i - 2;
+          --read_history_index;
+          return read_from_file[i - 1];
+        }
+      }
+      throw new FileNotFoundException();
+    }
+    private int cursor;
+    private BatteryInfo[] read_from_file;
+    private int read_history_index;
+  }
+
+  public static boolean parse_buffer_data_to_used_rate()
+  {
+    if (need_update_list_view && buffer_data_used_size > 2
         && adapter_battery_used_rate != null)
     {
       battery_used_rate.clear();
-      if (FIFO_history.used_size() > 1)
+      int interval = Integer.parseInt(
+          global_setting.getString(PREF_KEY_INTERVAL, "5"));
+      int list_count = Integer.parseInt(
+          global_setting.getString(PREF_KEY_LIST_SIZE, "200"));
+      Calendar calendar = Calendar.getInstance();
+      int minute = calendar.get(Calendar.MINUTE);
+      calendar.set(Calendar.MINUTE, minute - (minute % interval));
+      calendar.set(Calendar.SECOND, 0);
+      calendar.set(Calendar.MILLISECOND, 0);
+      //for test
+//      int second = calendar.get(Calendar.SECOND);
+//      calendar.set(Calendar.SECOND, second - (second % interval));
+
+      //need to read one more data, because we need it to calculate the rate
+      //the last element will be delete after all work done
+      battery_used_rate.ensureCapacity(list_count + 1);
+      BatteryUsedRate bur = null;
+      BatteryUsedRate bur_prev = null;
+      int list_index = 0;
+      BatteryInfo bi = null;
+      BatteryInfo bi_next = null;
+      float[] levels = new float[list_count + 1];
+      _read_buffer read_buffer = new _read_buffer();
+      try
       {
-        ListIterator<BatteryInfo> it = FIFO_history.Iterator();
-        BatteryInfo prev = it.next();
-        BatteryInfo now;
-        while(it.hasNext())
+        //read one more point from the history
+        while (list_index < list_count + 1)
         {
-          now = it.next();
-          BatteryUsedRate used_rate = new BatteryUsedRate();
-          used_rate.time = now.time;
-          used_rate.level = prev.level;
-          used_rate.is_charging = now.is_charging;
-          used_rate.rate = (float)(now.level - prev.level) 
-            / (now.time - prev.time) * 1000 * 3600;
-          battery_used_rate.add(used_rate);
-          prev = now;
+          bur = new BatteryUsedRate();
+          bur.time = calendar.getTime().getTime();
+          if (bi_next != null)
+            bi = bi_next;
+          else
+            bi = read_buffer.get();
+          logv("bi", bi.toString());
+          while (bur.time > bi.time)
+          {
+            calendar.add(Calendar.MINUTE, -interval);
+            //for test
+//            calendar.add(Calendar.SECOND, -interval);
+            bur.time = calendar.getTime().getTime();
+          }
+          logv("bur.time", format_ticket(bur.time, "yy-MM-dd HH:mm:ss"));
+          bi_next = read_buffer.get();
+          logv("bi_next", bi_next.toString());
+          while (bi_next.time >= bur.time)
+          {
+            bi = bi_next;
+            bi_next = read_buffer.get();
+            logv("bi_next", bi_next.toString());
+          }
+          bur.is_charging = bi.is_charging;
+          bur.level = bi.level;
+          battery_used_rate.add(bur);
+          //calculate the exact level in that point
+          levels[list_index] = 
+            (float)(bi.level - bi_next.level) * (bur.time - bi_next.time)
+            / (bi.time - bi_next.time) 
+            + bi_next.level;
+          logv("parse", str(list_index), format_ticket(bur.time, "yy-MM-dd HH:mm:ss"), str(levels[list_index]), str(bi.level), str(bi_next.level), str(bur.time), str(bi_next.time), str(bi.time), str(bi_next.time), str(bi_next.level));
+          if (list_index > 0)
+          {
+            bur_prev = battery_used_rate.get(list_index - 1);
+            bur_prev.rate = (levels[list_index - 1] - levels[list_index]) 
+              / (bur_prev.time - bur.time) * 3600L * 1000L;
+            logv("parse", str(bur_prev.rate));
+          }
+          ++list_index;
         }
-        return true;
       }
+      catch (FileNotFoundException e)
+      {}
+      //delete the last point
+      int last = battery_used_rate.size() - 1;
+      if (last >= 0 && battery_used_rate.get(last).rate == 0)
+        battery_used_rate.remove(last);
+      return true;
     }
     return false;
   }
@@ -129,6 +282,35 @@ public class Common
     {
       new SpeakThread().execute(what);
     }
+  }
+
+  public static int find_latest_history_index()
+  {
+    logd("find_latest_history_index", str(latest_history_index));
+    if (latest_history_index >= 0)
+      return latest_history_index;
+    String[] file_name_list = service_context.fileList();
+    int index = 0;
+    int i = 0;
+    String file_name;
+    boolean is_found;
+    int ret = index;
+    do
+    {
+      file_name = String.format(FILE_NAME_HISTORY, index);
+      is_found = false;
+      for (i = 0; i < file_name_list.length; ++i)
+      {
+        if (file_name.equals(file_name_list[i]))
+        {
+          ret = index;
+          is_found = true;
+          break;
+        }
+      }
+      ++index;
+    }while(is_found);
+    return ret;
   }
 }
 
@@ -300,6 +482,10 @@ class BatteryInfo
 //      int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
     }
     time = ticket();
+  }
+  public BatteryInfo(byte[] data)
+  {
+    update_from_bytes(data);
   }
   public String toString()
   {

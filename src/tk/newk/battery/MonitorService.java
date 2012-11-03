@@ -13,7 +13,6 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 
 import android.media.AudioManager;
 
@@ -53,12 +52,10 @@ public class MonitorService extends Service
         l = is.read(buf, 0, RECORD_LENGTH);
         if (l > 0)
         {
-          Common.buffer_data[buffer_data_used_size] = new BatteryInfo(null);
-          Common.buffer_data[buffer_data_used_size].update_from_bytes(buf);
+          Common.buffer_data[buffer_data_used_size] = new BatteryInfo(buf);
           ++buffer_data_used_size;
         }
       }while (l == RECORD_LENGTH);
-      recent_file_record_count = buffer_data_used_size;
       if (is != null)
         is.close();
     }
@@ -76,45 +73,12 @@ public class MonitorService extends Service
     if (TTS == null)
       TTS = new TextToSpeech(this, this);
     audio_manager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
-    if (FIFO_history == null)
-    {
-      SharedPreferences shared_pref 
-        = PreferenceManager.getDefaultSharedPreferences(this);
-      int list_size = Integer.parseInt(shared_pref.getString(
-            PREF_KEY_LIST_SIZE, "200"));
-      FIFO_history = new FixFIFO<BatteryInfo>(list_size);
-    }
+    if (global_setting == null)
+      global_setting = PreferenceManager.getDefaultSharedPreferences(this);
+    service_context = this;
     logv(this, "service is created");
   }
 
-  int find_latest_history_index()
-  {
-    logd(this, str(latest_history_index));
-    if (latest_history_index >= 0)
-      return latest_history_index;
-    String[] file_name_list = fileList();
-    int index = 0;
-    int i = 0;
-    String file_name;
-    boolean is_found;
-    int ret = index;
-    do
-    {
-      file_name = String.format(FILE_NAME_HISTORY, index);
-      is_found = false;
-      for (i = 0; i < file_name_list.length; ++i)
-      {
-        if (file_name.equals(file_name_list[i]))
-        {
-          ret = index;
-          is_found = true;
-          break;
-        }
-      }
-      ++index;
-    }while(is_found);
-    return ret;
-  }
 
   boolean copy_file(String from_file, String to_file)
   {
@@ -148,18 +112,20 @@ public class MonitorService extends Service
   {
     logd(this, "saving batter info", str(buffer_data_used_size));
     buffer_data[buffer_data_used_size] = bi;
-    ++buffer_data_used_size;
-    //save buffer data to file when buffer SAVE_TO_FILE_STEP record
-    //this prevent form writing to file too many times
-    if (buffer_data_used_size > recent_file_record_count
-        && buffer_data_used_size % SAVE_TO_FILE_STEP == 0)
+    FileOutputStream fos = null;
+    try
     {
-      append_records_to_file(FILE_NAME_RECENT, recent_file_record_count, -1);
-      recent_file_record_count = buffer_data_used_size;
+      fos = openFileOutput(FILE_NAME_RECENT, Context.MODE_APPEND);
+      fos.write(bi.to_bytes());
+      fos.close();
+      ++buffer_data_used_size;
+    }
+    catch(Exception e)
+    {
+      logexception(this, e);
     }
     //when the next save action to recent file will reach the max size of history file, we must transfer the recent file to history file
-    if (recent_file_record_count + SAVE_TO_FILE_STEP 
-        > HISTORY_FILE_RECORD_COUNT)
+    if (buffer_data_used_size >= HISTORY_FILE_RECORD_COUNT)
     {
       logd(this, "start to copy recent file to history");
       latest_history_index = find_latest_history_index();
@@ -173,20 +139,8 @@ public class MonitorService extends Service
       //don't need to actually delete the buffer data, only change index is OK
       //if want to reduce memory used, you can assign all elements to null,
       //but I think is not necessary because the buffer_data array is not so big
-      buffer_data_used_size = recent_file_record_count = 0;
+      buffer_data_used_size = 0;
     }
-  }
-
-  void update_history_list(BatteryInfo bi)
-  {
-    if (bi != null && FIFO_history != null)
-    {
-      FIFO_history.add(bi);
-      logv(this, "history FIFO", str(FIFO_history.used_size()), 
-          str(FIFO_history.capacity()));
-    }
-    if (battery_info_to_battery_use_rate())
-      adapter_battery_used_rate.notifyDataSetChanged();
   }
 
   @Override
@@ -197,7 +151,7 @@ public class MonitorService extends Service
           Common.START_SERVICE_FROM_RECEIVER, false))
     {
       BatteryInfo bi = new BatteryInfo(intent);
-      logv(this, bi.toString());
+      logd(this, bi.toString());
       if (!is_notification_init)
       {
         update_notification(bi);
@@ -208,15 +162,16 @@ public class MonitorService extends Service
         }
         is_notification_init = true;
       }
-      if (FIFO_history != null && FIFO_history.used_size() > 0 
-          && bi.level == FIFO_history.get(0).level)
+      if (buffer_data != null && buffer_data_used_size > 0 
+          && bi.level == buffer_data[buffer_data_used_size - 1].level)
       {
         logd(this, "battery level no change, ignored");
       }
       else
       {
         save_history(bi);
-        update_history_list(bi);
+        if (parse_buffer_data_to_used_rate())
+          adapter_battery_used_rate.notifyDataSetChanged();
         logv(this, "start to update notification");
         update_notification(bi);
         if (/*!is_service_foreground && */m_builder != null)
@@ -242,37 +197,6 @@ public class MonitorService extends Service
     return null;
   }
 
-  void append_records_to_file(String file_name, int start, int len)
-  {
-    if (start >= buffer_data_used_size || len == 0)
-      return;
-    if (len < 0 || start + len > buffer_data_used_size)
-      len = buffer_data_used_size - start;
-
-    logd(this, String.format("appending %d + %d to %s", start, len, file_name));
-    FileOutputStream fos = null;
-    try
-    {
-      fos = openFileOutput(file_name, Context.MODE_APPEND);
-      //make all write data to the buf[] array before write to file
-      byte[] buf = new byte[RECORD_LENGTH * len];
-      byte[] record = new byte[RECORD_LENGTH];
-      for (int i = 0; i < len; ++i)
-      {
-        record = buffer_data[start + i].to_bytes();
-        for (int j = 0; j < record.length; ++j)
-          buf[i * RECORD_LENGTH + j] = record[j];
-      }
-      fos.write(buf);
-      fos.close();
-    }
-    catch(Exception e)
-    {
-      logexception(this, e);
-    }
-
-  }
-
   @Override
   public void onDestroy()
   {
@@ -280,11 +204,6 @@ public class MonitorService extends Service
     {
       unregisterReceiver(battery_changed_receiver);
       is_receiver_registed = false;
-    }
-    if (buffer_data_used_size > recent_file_record_count)
-    {
-      logd("saving unsaved record before service stopped");
-      append_records_to_file(FILE_NAME_RECENT, recent_file_record_count, -1);
     }
     TTS = null;
     stopForeground(false);

@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import android.app.ListActivity;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import android.preference.PreferenceManager;
@@ -56,10 +55,10 @@ public class mainActivity extends ListActivity
       is_TTS_checked = true;
       check_TTS_enable();
     }
-    SharedPreferences shared_pref 
-      = PreferenceManager.getDefaultSharedPreferences(this);
+    if (global_setting == null)
+      global_setting = PreferenceManager.getDefaultSharedPreferences(this);
     boolean service_enable 
-      = shared_pref.getBoolean("pref_service_enable", true);
+      = global_setting.getBoolean(PREF_KEY_SERVICE_ENABLE, true);
     if (service_enable)
     {
       Intent service_intent = new Intent(this, MonitorService.class);
@@ -73,7 +72,7 @@ public class mainActivity extends ListActivity
     super.onResume();
     logv(this, "ativity is resume");
     need_update_list_view = true;
-    if (battery_info_to_battery_use_rate())
+    if (parse_buffer_data_to_used_rate())
       adapter_battery_used_rate.notifyDataSetChanged();
   }
 

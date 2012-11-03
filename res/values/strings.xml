@@ -15,7 +15,9 @@
     <string name="pref_service_enable">Enable Service</string>
     <string name="pref_sum_service_enabled">Service is enabled</string>
     <string name="pref_sum_service_disabled">Service is disabled</string>
-    <string name="pref_list_size">List Size: %d</string>
+    <string name="pref_list_size">List Size</string>
     <string name="pref_sum_list_size">Range: 50~500 Default: 200</string>
+    <string name="pref_interval">Interval</string>
+    <string name="pref_sum_interval">the time between two record; default: 5; unit: minute</string>
 
 </resources>
