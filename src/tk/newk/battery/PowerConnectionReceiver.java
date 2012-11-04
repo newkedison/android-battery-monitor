@@ -15,13 +15,13 @@ public class PowerConnectionReceiver extends BroadcastReceiver
     {
       logd(this, "Power is connected");
       power_supply_state = POWER_SUPPLY_STATE_CONNECTED;
-      say("Power supply is connected, battery is charging");
+      say("Power supply is connected, battery is charging", 0.5f);
     }
     else if (intent.getAction() == Intent.ACTION_POWER_DISCONNECTED)
     {
       logd(this, "Power is disconnected");
       power_supply_state = POWER_SUPPLY_STATE_DISCONNECTED;
-      say("Power supply is disconnected");
+      say("Power supply is disconnected", 0.3f);
     }
   }
 }

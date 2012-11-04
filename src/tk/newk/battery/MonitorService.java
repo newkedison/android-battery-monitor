@@ -35,7 +35,7 @@ import static tk.newk.battery.Common.*;
 import android.support.v4.app.NotificationCompat;
 
 public class MonitorService extends Service
-  implements TextToSpeech.OnInitListener
+  implements TextToSpeech.OnInitListener, TextToSpeech.OnUtteranceCompletedListener
 {
 
   void load_recently_history()
@@ -65,13 +65,23 @@ public class MonitorService extends Service
     }
   }
 
+  public void onUtteranceCompleted(String id)
+  {
+    logv(this, "TTS is complete");
+    is_TTS_complete = true;
+  }
+
   @Override
+  @SuppressWarnings("deprecation")
   public void onCreate() 
   {
     log_set_tag("battery");
     load_recently_history();
     if (TTS == null)
+    {
       TTS = new TextToSpeech(this, this);
+      TTS.setOnUtteranceCompletedListener(this);
+    }
     audio_manager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
     if (global_setting == null)
       global_setting = PreferenceManager.getDefaultSharedPreferences(this);
@@ -252,23 +262,30 @@ public class MonitorService extends Service
       NotificationManager nm = (NotificationManager)getSystemService(
           Context.NOTIFICATION_SERVICE);
       nm.notify(ID_NOTIFICATION, m_builder.build());
-      if (bi.level < 50 && bi.level % 10 == 0)
+      if (bi.level % 10 == 0
+          && (
+              (power_supply_state == POWER_SUPPLY_STATE_DISCONNECTED 
+                && bi.level < 50)
+              || 
+              (power_supply_state == POWER_SUPPLY_STATE_CONNECTED
+                && bi.level > 40 && bi.level < 100)
+             ))
       {
-        say(String.format("battery level is %d percent", bi.level));
+        say(String.format("battery level is %d percent", bi.level), 0.5f);
       }
       if (bi.level == 25 
           && power_supply_state == POWER_SUPPLY_STATE_DISCONNECTED)
       {
-        say("battery level is low, please charge");
+        say("battery level is low, please charge", 1.0f);
       }
       if (bi.level == 15 
           && power_supply_state == POWER_SUPPLY_STATE_DISCONNECTED)
       {
-        say("battery level is very low, please charge immediately");
+        say("battery level is very low, please charge immediately", 1.0f);
       }
       if (bi.level == 100 && power_supply_state == POWER_SUPPLY_STATE_CONNECTED)
       {
-        say("I am full");
+        say("I am full", 0.5f);
       }
     }
   }

@@ -4,8 +4,11 @@ import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
+import java.lang.Runnable;
+
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -73,6 +76,8 @@ public class Common
 
   static SharedPreferences global_setting = null;
   static Context service_context = null;
+
+  static boolean is_TTS_complete = false;
 
   private static class _read_buffer
   {
@@ -277,11 +282,49 @@ public class Common
     return 0;
   }
 
-  public static void say(String what)
+  public static void say(final String what)
   {
     if (TTS != null)
     {
-      new SpeakThread().execute(what);
+      TTS.speak(what, TextToSpeech.QUEUE_FLUSH, null);
+    }
+  }
+
+  public static void say(final String what, final float volume_scale)
+  {
+    if (TTS != null)
+    {
+      //use the AsyncTask to change volume to volumn_scale and change it back
+      //until the TTS has complete an utterance
+      //I had register a TextToSpeech.OnUtteranceCompletedListencer 
+      //in the MonitorService.onCreate() and change the is_TTS_complete there
+      AsyncTask.execute(new Runnable()
+        {
+          public void run()
+          {
+            int prev_volume = Common.change_volume(
+              AudioManager.STREAM_MUSIC, volume_scale);
+            HashMap<String, String> extra = new HashMap<String, String>();
+            extra.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "battery");
+            is_TTS_complete = false;
+            TTS.speak(what, TextToSpeech.QUEUE_FLUSH, extra);
+            try
+            {
+              int i = 10;
+              //when TTS speek complete, the TextToSpeech.OnUtteranceCompletedListener(registered in MonitorService.onCreate) will change is_TTS_complete to true
+              //and i is the max timeout
+              while (i > 0 && !is_TTS_complete)
+              {
+                Thread.sleep(1000, 0);
+                --i;
+              }
+            }
+            catch (Exception e)
+            { }
+            Common.change_volume(AudioManager.STREAM_MUSIC, prev_volume);
+          }
+        }
+      );
     }
   }
 
@@ -311,28 +354,6 @@ public class Common
       }
     }while(is_found);
     return ret;
-  }
-}
-
-class SpeakThread extends AsyncTask<String, Void, Boolean>
-{
-  @Override
-  protected Boolean doInBackground(String ... params)
-  {
-    if (Common.TTS == null)
-      return false;
-    int prev_volume = Common.change_volume(AudioManager.STREAM_MUSIC, 0.7f);
-    Common.TTS.speak(params[0], TextToSpeech.QUEUE_FLUSH, null);
-    try
-    {
-      Thread.sleep(5000, 0);
-    }
-    catch (Exception e)
-    {
-      logexception(this, e);
-    }
-    Common.change_volume(AudioManager.STREAM_MUSIC, prev_volume);
-    return true;
   }
 }
 
