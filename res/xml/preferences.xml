@@ -11,10 +11,11 @@
       android:summary="@string/pref_sum_list_size"
       android:defaultValue="200"
       android:inputType="number" />
-  <EditTextPreference
+  <ListPreference
       android:key="pref_interval"
       android:title="@string/pref_interval"
       android:summary="@string/pref_sum_interval"
-      android:defaultValue="5"
-      android:inputType="number" />
+      android:entries="@array/pref_interval_entries"
+      android:entryValues="@array/pref_interval_values"
+      android:defaultValue="20" />
 </PreferenceScreen>

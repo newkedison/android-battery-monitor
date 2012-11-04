@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">battery</string>
+    <string name="app_name">BatteryMonitor</string>
     <string name="activity_title_main">Battery Monitor</string>
     <string name="activity_title_setting">Battery Monitor Setting</string>
     <string name="activity_title_log">View Log</string>
@@ -18,6 +18,6 @@
     <string name="pref_list_size">List Size</string>
     <string name="pref_sum_list_size">Range: 50~500 Default: 200</string>
     <string name="pref_interval">Interval</string>
-    <string name="pref_sum_interval">the time between two record; default: 5; unit: minute</string>
+    <string name="pref_sum_interval">the time between two record</string>
 
 </resources>

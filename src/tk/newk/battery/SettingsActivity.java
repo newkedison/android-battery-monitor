@@ -7,12 +7,49 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 
 import android.os.Bundle;
 
+import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+
+import android.text.InputFilter;
+
+import android.widget.EditText;
 
 import static tk.newk.battery.Common.*;
 import static tk.newk.common.utils.*;
 import static tk.newk.common.log.*;
+
+class IntInputFilter implements InputFilter 
+{
+  //cannot set the min value filter, because we can not guarantee that by a filter
+  private int m_max;
+  public IntInputFilter(int max)
+  {
+    m_max = max;
+  }
+  public CharSequence filter(CharSequence source, int start, int end,
+      android.text.Spanned dest, int dstart, int dend) 
+  {
+    if (end > start) 
+    {
+      String destTxt = dest.toString();
+      String resultingTxt = destTxt.substring(0, dstart) 
+        + source.subSequence(start, end) 
+        + destTxt.substring(dend);
+      try
+      {
+        int value = Integer.parseInt(resultingTxt);
+        if (value <= m_max)
+        {
+          return null;
+        }
+      }
+      catch(NumberFormatException e)
+      { }
+    }
+    return "";
+  }
+};
 
 public class SettingsActivity extends PreferenceActivity
     implements OnSharedPreferenceChangeListener
@@ -30,11 +67,15 @@ public class SettingsActivity extends PreferenceActivity
     Preference pref = findPreference(PREF_KEY_LIST_SIZE);
     pref.setTitle(getString(R.string.pref_list_size) 
         + String.format(": %d", list_size));
+    EditText edt = ((EditTextPreference)pref).getEditText();
+    InputFilter[] filters = new InputFilter[1];
+    filters[0] = new IntInputFilter(500);
+    edt.setFilters(filters);
     int interval = Integer.parseInt(global_setting.getString(
           PREF_KEY_INTERVAL, "5"));
     pref = findPreference(PREF_KEY_INTERVAL);
     pref.setTitle(getString(R.string.pref_interval)
-        + String.format(": %d", interval));
+        + String.format(": %d minute(s)", interval));
   }
 
   @Override
@@ -51,6 +92,26 @@ public class SettingsActivity extends PreferenceActivity
     getPreferenceScreen().getSharedPreferences()
       .unregisterOnSharedPreferenceChangeListener(this);
   } 
+
+  private int check_range(SharedPreferences sharePreferences, 
+      String key, int default_value, int min, int max)
+  {
+    int value = Integer.parseInt(sharePreferences.getString(key, 
+          Integer.toString(default_value)));
+    int new_value = value;
+    if (value < min)
+      new_value = min;
+    if (value > max)
+      new_value = max;
+    if (value != new_value)
+    {
+      SharedPreferences.Editor editor = sharePreferences.edit();
+      editor.putString(key, str(new_value));
+      editor.commit();
+      value = new_value;
+    }
+    return value;
+  }
 
   @SuppressWarnings("deprecation")
   public void onSharedPreferenceChanged(SharedPreferences sharePreferences, 
@@ -76,19 +137,7 @@ public class SettingsActivity extends PreferenceActivity
     }
     else if (key.equals(PREF_KEY_LIST_SIZE))
     {
-      int list_size = Integer.parseInt(sharePreferences.getString(key, "200"));
-      int new_size = list_size;
-      if (list_size < 50)
-        new_size = 50;
-      if (list_size > 500)
-        new_size = 500;
-      if (list_size != new_size)
-      {
-        SharedPreferences.Editor editor = sharePreferences.edit();
-        editor.putString(key, str(new_size));
-        editor.commit();
-        list_size = new_size;
-      }
+      int list_size = check_range(sharePreferences, key, 200, 50, 500);
       Preference pref = findPreference(key);
       pref.setTitle(getString(R.string.pref_list_size) 
           + String.format(": %d", list_size));
@@ -97,21 +146,9 @@ public class SettingsActivity extends PreferenceActivity
     else if (key.equals(PREF_KEY_INTERVAL))
     {
       int interval = Integer.parseInt(sharePreferences.getString(key, "5"));
-      int new_interval = interval;
-      if (interval < 1)
-        new_interval = 1;
-      if (interval > 60)
-        new_interval = 60;
-      if (interval != new_interval)
-      {
-        SharedPreferences.Editor editor = sharePreferences.edit();
-        editor.putString(key, str(new_interval));
-        editor.commit();
-        interval = new_interval;
-      }
       Preference pref = findPreference(key);
       pref.setTitle(getString(R.string.pref_interval) 
-          + String.format(": %d", interval));
+          + String.format(": %d minute(s)", interval));
       logv(this, "interval change to", str(interval));
     }
   }
