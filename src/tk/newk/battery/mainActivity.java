@@ -3,14 +3,10 @@ package tk.newk.battery;
 import java.io.FileInputStream;
 
 import android.app.ListActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
-
 import android.preference.PreferenceManager;
-
 import android.speech.tts.TextToSpeech;
-
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -72,7 +68,7 @@ public class mainActivity extends ListActivity
     super.onResume();
     logv(this, "ativity is resume");
     need_update_list_view = true;
-    if (parse_buffer_data_to_used_rate())
+    if (update_battery_used_rate_list())
       adapter_battery_used_rate.notifyDataSetChanged();
   }
 

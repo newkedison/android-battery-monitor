@@ -134,7 +134,73 @@ public class Common
     private int read_history_index;
   }
 
-  public static boolean parse_buffer_data_to_used_rate()
+  private static void parse_buffer_data_to_used_rate(
+      ArrayList<BatteryUsedRate> dst, long end_time, int interval, int max_size)
+  {
+    dst.clear();
+    Calendar calendar = Calendar.getInstance();
+    int minute = calendar.get(Calendar.MINUTE);
+    calendar.set(Calendar.MINUTE, minute - (minute % interval));
+    calendar.set(Calendar.SECOND, 0);
+    calendar.set(Calendar.MILLISECOND, 0);
+    if (end_time != 0)
+      max_size = (int)
+        ((calendar.getTime().getTime() - end_time) / 60000 / interval) + 1;
+    
+    dst.ensureCapacity(max_size + 1);
+    BatteryUsedRate bur = null;
+    BatteryUsedRate bur_prev = null;
+    int list_index = 0;
+    BatteryInfo bi = null;
+    BatteryInfo bi_next = null;
+    _read_buffer read_buffer = new _read_buffer();
+    try
+    {
+      bi = read_buffer.get();
+      bi_next = read_buffer.get();
+      //read one more point from the history
+      while (list_index < max_size + 1)
+      {
+        bur = new BatteryUsedRate();
+        bur.time = calendar.getTime().getTime();
+        if (list_index == 0)
+        {
+          while (bur.time > bi.time)
+          {
+            calendar.add(Calendar.MINUTE, -interval);
+            bur.time = calendar.getTime().getTime();
+          }
+        }
+        while (bi_next.time >= bur.time)
+        {
+          bi = bi_next;
+          bi_next = read_buffer.get();
+        }
+        bur.is_charging = bi.is_charging;
+        bur.level = 
+          (float)(bi.level - bi_next.level) * (bur.time - bi_next.time)
+          / (bi.time - bi_next.time) 
+          + bi_next.level;
+        dst.add(bur);
+        if (list_index > 0)
+        {
+          bur_prev = dst.get(list_index - 1);
+          bur_prev.rate = (bur_prev.level - bur.level);
+        }
+        if (bur.time <= end_time)
+          break;
+        calendar.add(Calendar.MINUTE, -interval);
+        ++list_index;
+      }
+    }
+    catch (FileNotFoundException e)
+    {}
+    //delete the last point
+    int last = dst.size() - 1;
+    if (last >= 0 && dst.get(last).rate == 0)
+      dst.remove(last);
+  }
+  private static boolean recreate_battery_used_rate()
   {
     if (need_update_list_view && buffer_data_used_size > 2
         && adapter_battery_used_rate != null)
@@ -144,83 +210,48 @@ public class Common
           global_setting.getString(PREF_KEY_INTERVAL, "5"));
       int list_count = Integer.parseInt(
           global_setting.getString(PREF_KEY_LIST_SIZE, "200"));
-      Calendar calendar = Calendar.getInstance();
-      int minute = calendar.get(Calendar.MINUTE);
-      calendar.set(Calendar.MINUTE, minute - (minute % interval));
-      calendar.set(Calendar.SECOND, 0);
-      calendar.set(Calendar.MILLISECOND, 0);
-      //for test
-//      int second = calendar.get(Calendar.SECOND);
-//      calendar.set(Calendar.SECOND, second - (second % interval));
-
-      //need to read one more data, because we need it to calculate the rate
-      //the last element will be delete after all work done
-      battery_used_rate.ensureCapacity(list_count + 1);
-      BatteryUsedRate bur = null;
-      BatteryUsedRate bur_prev = null;
-      int list_index = 0;
-      BatteryInfo bi = null;
-      BatteryInfo bi_next = null;
-      float[] levels = new float[list_count + 1];
-      _read_buffer read_buffer = new _read_buffer();
-      try
-      {
-        //read one more point from the history
-        while (list_index < list_count + 1)
-        {
-          bur = new BatteryUsedRate();
-          bur.time = calendar.getTime().getTime();
-          if (bi_next != null)
-            bi = bi_next;
-          else
-            bi = read_buffer.get();
-//          logv("bi", bi.toString());
-          while (bur.time > bi.time)
-          {
-            calendar.add(Calendar.MINUTE, -interval);
-            //for test
-//            calendar.add(Calendar.SECOND, -interval);
-            bur.time = calendar.getTime().getTime();
-          }
-//          logv("bur.time", format_ticket(bur.time, "yy-MM-dd HH:mm:ss"));
-          bi_next = read_buffer.get();
-//          logv("bi_next", bi_next.toString());
-          while (bi_next.time >= bur.time)
-          {
-            bi = bi_next;
-            bi_next = read_buffer.get();
-            logv("bi_next", bi_next.toString());
-          }
-          bur.is_charging = bi.is_charging;
-          bur.level = bi.level;
-          battery_used_rate.add(bur);
-          //calculate the exact level in that point
-          levels[list_index] = 
-            (float)(bi.level - bi_next.level) * (bur.time - bi_next.time)
-            / (bi.time - bi_next.time) 
-            + bi_next.level;
-//          logv("parse", str(list_index), format_ticket(bur.time, "yy-MM-dd HH:mm:ss"), str(levels[list_index]), str(bi.level), str(bi_next.level), str(bur.time), str(bi_next.time), str(bi.time), str(bi_next.time), str(bi_next.level));
-          if (list_index > 0)
-          {
-            bur_prev = battery_used_rate.get(list_index - 1);
-            bur_prev.rate = (levels[list_index - 1] - levels[list_index]) 
-              / (bur_prev.time - bur.time) * 3600L * 1000L;
-//            logv("parse", str(bur_prev.rate));
-          }
-          ++list_index;
-        }
-      }
-      catch (FileNotFoundException e)
-      {}
-      //delete the last point
-      int last = battery_used_rate.size() - 1;
-      if (last >= 0 && battery_used_rate.get(last).rate == 0)
-        battery_used_rate.remove(last);
+      battery_used_rate.clear();
+      parse_buffer_data_to_used_rate(battery_used_rate, 0, 
+          interval, list_count);
       return true;
     }
     return false;
   }
 
+  public static boolean update_battery_used_rate_list()
+  {
+    if (need_update_list_view && buffer_data_used_size > 2
+        && adapter_battery_used_rate != null)
+    {
+      if (battery_used_rate.size() < 2)
+        return recreate_battery_used_rate();
+      int interval = Integer.parseInt(
+        global_setting.getString(PREF_KEY_INTERVAL, "5"));
+      long old_interval = 
+        (battery_used_rate.get(0).time - battery_used_rate.get(1).time) 
+        / 60000L;
+      if (interval != old_interval)
+        return recreate_battery_used_rate();
+      int list_count = Integer.parseInt(
+        global_setting.getString(PREF_KEY_LIST_SIZE, "200"));
+      ArrayList<BatteryUsedRate> addition = new ArrayList<BatteryUsedRate>();
+      parse_buffer_data_to_used_rate(addition, battery_used_rate.get(0).time, 
+            interval, 0);
+      if (addition.size() > 0)
+      {
+        battery_used_rate.addAll(0, addition);
+        if (battery_used_rate.size() > list_count)
+        {
+          for (int i = battery_used_rate.size() - 1; i > list_count; --i)
+          {
+            battery_used_rate.remove(i);
+          }
+        }
+        return true;
+      }
+    }
+    return false;
+  }
   public static int change_volume(int stream, int volume)
   {
     if (audio_manager != null)
@@ -245,7 +276,6 @@ public class Common
     }
     return 0;
   }
-
 
   public static void say(String what)
   {
@@ -321,6 +351,10 @@ class MyArrayAdapter extends ArrayAdapter<BatteryUsedRate>
     m_context = context;
     m_data = data;
   }
+  public String toString()
+  {
+    return str(m_data.size());
+  }
   @Override
   public View getView(int position, View convertView, ViewGroup parent)
   {
@@ -339,12 +373,12 @@ class MyArrayAdapter extends ArrayAdapter<BatteryUsedRate>
     ViewHolder vh = (ViewHolder) row.getTag();
     String charge_state;
     if (bur.is_charging)
-      charge_state = "charging";
+      charge_state = "+";
     else
-      charge_state = "discharge";
-    vh.lbl_left.setText(String.format("%3d %s %4.1f%% %10s", position + 1, 
+      charge_state = "";
+    vh.lbl_left.setText(String.format("%3d:%s %4.2f%% %s", position + 1, 
         format_ticket(bur.time, "yy-MM-dd HH:mm:ss"), bur.level, charge_state));
-    vh.lbl_right.setText(str(bur.rate, "0.00") + "%/h");
+    vh.lbl_right.setText(str(bur.rate, "0.00") + "%");
     return row;
   }
 }

@@ -170,7 +170,7 @@ public class MonitorService extends Service
       else
       {
         save_history(bi);
-        if (parse_buffer_data_to_used_rate())
+        if (update_battery_used_rate_list())
           adapter_battery_used_rate.notifyDataSetChanged();
         logv(this, "start to update notification");
         update_notification(bi);
