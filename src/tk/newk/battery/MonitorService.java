@@ -16,6 +16,7 @@ import android.content.IntentFilter;
 
 import android.media.AudioManager;
 
+import android.os.BatteryManager;
 import android.os.IBinder;
 
 import android.preference.PreferenceManager;
@@ -153,6 +154,47 @@ public class MonitorService extends Service
     }
   }
 
+  void update_current_battery_info(Intent intent)
+  {
+    int h = intent.getIntExtra(BatteryManager.EXTRA_HEALTH, 
+        BatteryManager.BATTERY_HEALTH_UNKNOWN);
+    String health = "";
+    switch (h)
+    {
+      case BatteryManager.BATTERY_HEALTH_UNKNOWN:
+        health = getString(R.string.str_battery_health_unknown);
+        break;
+      case BatteryManager.BATTERY_HEALTH_COLD:
+        health = getString(R.string.str_battery_health_cold);
+        break;
+      case BatteryManager.BATTERY_HEALTH_DEAD:
+        health = getString(R.string.str_battery_health_dead);
+        break;
+      case BatteryManager.BATTERY_HEALTH_GOOD:
+        health = getString(R.string.str_battery_health_good);
+        break;
+      case BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE:
+        health = getString(R.string.str_battery_health_over_voltage);
+        break;
+      case BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE:
+        health = getString(R.string.str_battery_health_error);
+        break;
+      case BatteryManager.BATTERY_HEALTH_OVERHEAT:
+        health = getString(R.string.str_battery_health_over_heat);
+        break;
+    }
+    float temp = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) / 10f;
+    float voltage = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0) / 1000f;
+    str_current_battery_state = 
+      String.format(getString(R.string.str_current_battery_state),
+        intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1), 
+        voltage, temp, health);
+    if (lbl_current_battery_state != null)
+    {
+      lbl_current_battery_state.setText(str_current_battery_state);
+    }
+  }
+
   @Override
   public int onStartCommand(Intent intent, int flags, int start_id)
   {
@@ -160,6 +202,7 @@ public class MonitorService extends Service
     if (intent != null && intent.getBooleanExtra(
           Common.START_SERVICE_FROM_RECEIVER, false))
     {
+      update_current_battery_info(intent);
       BatteryInfo bi = new BatteryInfo(intent);
       logd(this, bi.toString());
       if (!is_notification_init)

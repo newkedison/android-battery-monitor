@@ -11,6 +11,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import android.widget.TextView;
+
 import static tk.newk.common.log.*;
 import static tk.newk.common.utils.*;
 
@@ -18,6 +20,7 @@ import static tk.newk.battery.Common.*;
 
 public class mainActivity extends ListActivity 
 {
+  private TextView m_lbl_battery_level;
   /** Called when the activity is first created. */
   @Override
   public void onCreate(Bundle savedInstanceState) 
@@ -25,6 +28,7 @@ public class mainActivity extends ListActivity
     super.onCreate(savedInstanceState);
     logv(this, "ativity is created");
     setContentView(R.layout.main);
+    m_lbl_battery_level = (TextView)findViewById(R.id.lbl_battery_level);
     if (adapter_battery_used_rate == null)
       adapter_battery_used_rate = new MyArrayAdapter(this, battery_used_rate);
     setListAdapter(adapter_battery_used_rate);
@@ -70,6 +74,8 @@ public class mainActivity extends ListActivity
     need_update_list_view = true;
     if (update_battery_used_rate_list())
       adapter_battery_used_rate.notifyDataSetChanged();
+    lbl_current_battery_state = m_lbl_battery_level;
+    lbl_current_battery_state.setText(str_current_battery_state);
   }
 
   @Override
@@ -78,6 +84,7 @@ public class mainActivity extends ListActivity
     super.onPause();
     logv(this, "ativity is pause");
     need_update_list_view = false;
+    lbl_current_battery_state = null;
   }
 
   @Override

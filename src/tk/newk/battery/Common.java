@@ -68,6 +68,7 @@ public class Common
     = new BatteryChangedReceiver();
   static boolean is_service_foreground = false;
   static boolean is_TTS_checked = false;
+  static boolean is_TTS_complete = false;
   static boolean is_notification_init = false;
   static int power_supply_state = POWER_SUPPLY_STATE_UNKNOWN;
 
@@ -77,7 +78,8 @@ public class Common
   static SharedPreferences global_setting = null;
   static Context service_context = null;
 
-  static boolean is_TTS_complete = false;
+  static TextView lbl_current_battery_state = null;
+  static String str_current_battery_state = "";
 
   private static class _read_buffer
   {

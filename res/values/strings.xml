@@ -5,7 +5,7 @@
     <string name="activity_title_main">Battery Monitor</string>
     <string name="activity_title_setting">Battery Monitor Setting</string>
     <string name="activity_title_log">View Log</string>
-    <string name="lbl_battery_level">Battery Level:</string>
+    <string name="lbl_battery_level">Battery Status:</string>
     <string name="string_no_data">no data now</string>
     <string name="btn_start_service">Start</string>
     <string name="btn_stop_service">Stop</string>
@@ -19,5 +19,13 @@
     <string name="pref_sum_list_size">Range: 50~500 Default: 200</string>
     <string name="pref_interval">Interval</string>
     <string name="pref_sum_interval">the time between two record</string>
+    <string name="str_current_battery_state" formatted="false">Level:%d%% Voltage:%.3fV Temp:%.1f°C Health:%s</string>
+    <string name="str_battery_health_unknown">Unknow</string>
+    <string name="str_battery_health_cold">Cold</string>
+    <string name="str_battery_health_dead">Dead</string>
+    <string name="str_battery_health_good">Good</string>
+    <string name="str_battery_health_over_voltage">Over voltage</string>
+    <string name="str_battery_health_error">Error</string>
+    <string name="str_battery_health_over_heat">Over heat</string>
 
 </resources>
