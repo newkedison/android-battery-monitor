@@ -316,13 +316,13 @@ public class MonitorService extends Service
       {
         say(String.format("battery level is %d percent", bi.level), 0.5f);
       }
-      if (bi.level == 25 
-          && power_supply_state == POWER_SUPPLY_STATE_DISCONNECTED)
+      if (bi.level <= 25 && bi.level > 15
+          && power_supply_state != POWER_SUPPLY_STATE_CONNECTED)
       {
         say("battery level is low, please charge", 1.0f);
       }
-      if (bi.level == 15 
-          && power_supply_state == POWER_SUPPLY_STATE_DISCONNECTED)
+      if (bi.level <= 15 
+          && power_supply_state != POWER_SUPPLY_STATE_CONNECTED)
       {
         say("battery level is very low, please charge immediately", 1.0f);
       }

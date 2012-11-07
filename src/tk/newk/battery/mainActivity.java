@@ -2,8 +2,14 @@ package tk.newk.battery;
 
 import java.io.FileInputStream;
 
+import java.util.Date;
+
+import org.achartengine.model.XYSeries;
+
 import android.app.ListActivity;
 import android.content.Intent;
+
+import android.graphics.Paint.Align;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
@@ -12,6 +18,16 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import android.widget.TextView;
+
+import org.achartengine.ChartFactory;
+import org.achartengine.chart.PointStyle;
+import org.achartengine.renderer.XYMultipleSeriesRenderer;
+import org.achartengine.model.TimeSeries;
+import org.achartengine.model.XYMultipleSeriesDataset;
+import org.achartengine.renderer.XYSeriesRenderer;
+
+import android.content.Context;
+import android.graphics.Color;
 
 import static tk.newk.common.log.*;
 import static tk.newk.common.utils.*;
@@ -136,8 +152,9 @@ public class mainActivity extends ListActivity
   {
     switch (item.getItemId())
     {
-//      case R.id.menu_curve:
-//        return true;
+      case R.id.menu_curve:
+        startActivity(make_chart_activity_intent(this));
+        return true;
       case R.id.menu_log:
         Intent open_log = new Intent(this, LogActivity.class);
         startActivity(open_log);
@@ -152,6 +169,88 @@ public class mainActivity extends ListActivity
         return super.onOptionsItemSelected(item);
     }
   }
+
+  private Intent make_chart_activity_intent(Context context)
+  {
+    String title = getString(R.string.str_curve_title);
+    int length = battery_used_rate.size();
+    int color_level = Color.CYAN;
+    int color_rate = Color.GREEN;
+    String x_title = getString(R.string.axis_x_time);
+    String y_title_level = getString(R.string.axis_y_left_level);
+    String y_title_rate = getString(R.string.axis_y_right_rate);
+    double ymin = 0, ymax = 100;
+    int list_count = battery_used_rate.size();
+    double xmin = battery_used_rate.get(list_count - 1).time;
+    double xmax = battery_used_rate.get(0).time;
+    double offset = (xmax - xmin) / 10;
+    
+    PointStyle point_style = PointStyle.POINT;
+    XYMultipleSeriesRenderer renderer = new XYMultipleSeriesRenderer(2);
+    renderer.setAxisTitleTextSize(25);
+    renderer.setChartTitleTextSize(30);
+    renderer.setLabelsTextSize(25);
+    renderer.setLegendTextSize(25);
+    renderer.setPointSize(5f);
+    renderer.setMargins(new int[] { 60, 40, 60, 40 });
+    XYSeriesRenderer r = new XYSeriesRenderer();
+    r.setColor(color_level);
+    r.setPointStyle(point_style);
+    r.setLineWidth(3f);
+    renderer.addSeriesRenderer(r);
+    r = new XYSeriesRenderer();
+    r.setColor(color_rate);
+    r.setPointStyle(point_style);
+    r.setLineWidth(3f);
+    renderer.addSeriesRenderer(r);
+    //set the y grid to 10, if possible
+    renderer.setYLabels(10);
+    renderer.setShowGrid(true);
+    renderer.setPanEnabled(true, false);
+    renderer.setPanLimits(
+        new double[] {xmin - offset, xmax + offset, ymin, ymax});
+    renderer.setZoomEnabled(true, false);
+    renderer.setZoomLimits(
+        new double[] {xmin - offset, xmax + offset, ymin, ymax});
+
+    renderer.setChartTitle(title);
+    renderer.setXTitle(x_title);
+    renderer.setYTitle(y_title_level);
+    renderer.setYTitle(y_title_rate, 1);
+
+    renderer.setXAxisMin(xmin);
+    renderer.setXAxisMax(xmax);
+    renderer.setYAxisMin(ymin, 0);
+    renderer.setYAxisMax(ymax, 0);
+
+    renderer.setXLabelsAlign(Align.RIGHT);
+    renderer.setYLabelsAlign(Align.LEFT, 0);
+    renderer.setYLabelsAlign(Align.RIGHT, 1);
+    renderer.setYAxisAlign(Align.LEFT, 0);
+    renderer.setYAxisAlign(Align.RIGHT, 1);
+
+    renderer.setAxesColor(Color.GRAY);
+    renderer.setLabelsColor(Color.LTGRAY);
+    renderer.setYLabelsColor(0, color_level);
+    renderer.setYLabelsColor(1, color_rate);
+
+    TimeSeries series_level = new TimeSeries(y_title_level);
+    XYSeries series_rate = new XYSeries(y_title_rate, 1);
+    for (int i = 0; i < length; ++i)
+    {
+      BatteryUsedRate bur = battery_used_rate.get(i);
+      series_level.add(new Date(bur.time), bur.level);
+      series_rate.add(bur.time, bur.rate);
+    }
+    renderer.setYAxisMin(-10, 1);
+    renderer.setYAxisMax(10, 1);
+
+    XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
+    dataset.addSeries(series_level);
+    dataset.addSeries(series_rate);
+    return ChartFactory.getTimeChartIntent(context, dataset, renderer, "hh:mm");
+  }
 }
 
 // vim: fdm=syntax fdl=1 fdn=2
+

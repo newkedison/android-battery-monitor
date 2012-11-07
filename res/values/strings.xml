@@ -27,5 +27,9 @@
     <string name="str_battery_health_over_voltage">Over voltage</string>
     <string name="str_battery_health_error">Error</string>
     <string name="str_battery_health_over_heat">Over heat</string>
+    <string name="str_curve_title">Battery Used Rate</string>
+    <string name="axis_x_time">Time</string>
+    <string name="axis_y_left_level">Level(%)</string>
+    <string name="axis_y_right_rate">Rate(%)</string>
 
 </resources>
