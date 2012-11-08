@@ -4,8 +4,6 @@ import java.io.BufferedInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 
-import java.util.Locale;
-
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -14,18 +12,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
-import android.media.AudioManager;
-
 import android.os.BatteryManager;
 import android.os.IBinder;
 
 import android.preference.PreferenceManager;
 
-import android.speech.tts.TextToSpeech;
-
 import android.support.v4.app.TaskStackBuilder;
-
-import android.widget.Toast;
 
 import static tk.newk.common.log.*;
 import static tk.newk.common.utils.*;
@@ -36,7 +28,6 @@ import static tk.newk.battery.Common.*;
 import android.support.v4.app.NotificationCompat;
 
 public class MonitorService extends Service
-  implements TextToSpeech.OnInitListener, TextToSpeech.OnUtteranceCompletedListener
 {
 
   void load_recently_history()
@@ -66,30 +57,24 @@ public class MonitorService extends Service
     }
   }
 
-  public void onUtteranceCompleted(String id)
-  {
-    logv(this, "TTS is complete");
-    is_TTS_complete = true;
-  }
-
   @Override
-  @SuppressWarnings("deprecation")
   public void onCreate() 
   {
     log_set_tag("battery");
     load_recently_history();
-    if (TTS == null)
-    {
-      TTS = new TextToSpeech(this, this);
-      TTS.setOnUtteranceCompletedListener(this);
-    }
-    audio_manager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+    TTS_helper_class = new TTS_helper(this);
+
     if (global_setting == null)
       global_setting = PreferenceManager.getDefaultSharedPreferences(this);
     service_context = this;
+    if (update_battery_used_rate_list())
+      adapter_battery_used_rate.notifyDataSetChanged();
+    if (read_setting_boolean(PREF_KEY_TTS_ENABLE, false))
+    {
+
+    }
     logv(this, "service is created");
   }
-
 
   boolean copy_file(String from_file, String to_file)
   {
@@ -258,7 +243,6 @@ public class MonitorService extends Service
       unregisterReceiver(battery_changed_receiver);
       is_receiver_registed = false;
     }
-    TTS = null;
     stopForeground(false);
     is_service_foreground = false;
     NotificationManager nm = (NotificationManager)getSystemService(
@@ -305,50 +289,44 @@ public class MonitorService extends Service
       NotificationManager nm = (NotificationManager)getSystemService(
           Context.NOTIFICATION_SERVICE);
       nm.notify(ID_NOTIFICATION, m_builder.build());
-      if (bi.level % 10 == 0
-          && (
-              (power_supply_state == POWER_SUPPLY_STATE_DISCONNECTED 
-                && bi.level < 50)
-              || 
-              (power_supply_state == POWER_SUPPLY_STATE_CONNECTED
-                && bi.level > 40 && bi.level < 100)
-             ))
+      logv(this, "judge TTS", str(read_setting_boolean(PREF_KEY_TTS_ENABLE, false)));
+      if (read_setting_boolean(PREF_KEY_TTS_ENABLE, false))
       {
-        say(String.format("battery level is %d percent", bi.level), 0.5f);
-      }
-      if (bi.level <= 25 && bi.level > 15
-          && power_supply_state != POWER_SUPPLY_STATE_CONNECTED)
-      {
-        say("battery level is low, please charge", 1.0f);
-      }
-      if (bi.level <= 15 
-          && power_supply_state != POWER_SUPPLY_STATE_CONNECTED)
-      {
-        say("battery level is very low, please charge immediately", 1.0f);
-      }
-      if (bi.level == 100 && power_supply_state == POWER_SUPPLY_STATE_CONNECTED)
-      {
-        say("I am full", 0.5f);
+        if (bi.level <= 25 && bi.level > 15 && bi.level % 2 == 0
+            && power_supply_state != POWER_SUPPLY_STATE_CONNECTED)
+        {
+          TTS_helper_class.say("battery level is low, please charge", 1.0f);
+        }
+        else if (bi.level <= 15 
+            && power_supply_state != POWER_SUPPLY_STATE_CONNECTED)
+        {
+          TTS_helper_class.say(
+              "battery level is very low, please charge immediately", 1.0f);
+        }
+        else if (bi.level % 10 == 0
+            && (
+                //alert when not charge and level is 0, 10, 20, 30, 40
+                (power_supply_state == POWER_SUPPLY_STATE_DISCONNECTED 
+                  && bi.level < 50)
+                || 
+                //alert when charging and level is 50, 60, 70, 80, 90
+                (power_supply_state == POWER_SUPPLY_STATE_CONNECTED
+                  && bi.level > 40 && bi.level < 100)
+               ))
+        {
+          TTS_helper_class.say(
+              String.format("battery level is %d percent", bi.level), 0.5f);
+        }
+        else if (bi.level == 100 
+            && power_supply_state == POWER_SUPPLY_STATE_CONNECTED)
+        {
+          TTS_helper_class.say("I am full", 0.5f);
+        }
+
       }
     }
   }
 
-  // interface TextToSpeech.OnInitListener
-  public void onInit(int initStatus) 
-  {
-    //check for successful instantiation
-    if (initStatus == TextToSpeech.SUCCESS) 
-    {
-      if(TTS != null 
-          && TTS.isLanguageAvailable(Locale.US) == TextToSpeech.LANG_AVAILABLE)
-        TTS.setLanguage(Locale.US);
-    }
-    else if (initStatus == TextToSpeech.ERROR) 
-    {
-      Toast.makeText(this, "Sorry! Text To Speech failed...", 
-          Toast.LENGTH_LONG).show();
-    }
-  }
 }
 
 // vim: fdm=syntax fdl=1 fdn=2

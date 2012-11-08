@@ -1,7 +1,5 @@
 package tk.newk.battery;
 
-import java.io.FileInputStream;
-
 import java.util.Date;
 
 import org.achartengine.model.XYSeries;
@@ -12,7 +10,6 @@ import android.content.Intent;
 import android.graphics.Paint.Align;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.speech.tts.TextToSpeech;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -29,8 +26,9 @@ import org.achartengine.renderer.XYSeriesRenderer;
 import android.content.Context;
 import android.graphics.Color;
 
+import android.widget.Toast;
+
 import static tk.newk.common.log.*;
-import static tk.newk.common.utils.*;
 
 import static tk.newk.battery.Common.*;
 
@@ -49,32 +47,10 @@ public class mainActivity extends ListActivity
       adapter_battery_used_rate = new MyArrayAdapter(this, battery_used_rate);
     setListAdapter(adapter_battery_used_rate);
     log_set_tag("battery");
-    String[] file_list = fileList();
-    for (String file_name: file_list)
-    {
-      FileInputStream fis = null;
-      int size = -1;
-      try
-      {
-        fis = openFileInput(file_name);
-        size = fis.available();
-        fis.close();
-      }
-      catch (Exception e)
-      {
-        logexception(this, e);
-      }
-      logv(this, file_name, str(size));
-    }
-    if (!is_TTS_checked)
-    {
-      is_TTS_checked = true;
-      check_TTS_enable();
-    }
     if (global_setting == null)
       global_setting = PreferenceManager.getDefaultSharedPreferences(this);
     boolean service_enable 
-      = global_setting.getBoolean(PREF_KEY_SERVICE_ENABLE, true);
+      = read_setting_boolean(PREF_KEY_SERVICE_ENABLE, true);
     if (service_enable)
     {
       Intent service_intent = new Intent(this, MonitorService.class);
@@ -110,35 +86,6 @@ public class mainActivity extends ListActivity
     logv(this, "activity is stop");
   }
 
-  void check_TTS_enable()
-  {
-    Intent checkTTS = new Intent();
-    checkTTS.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
-    startActivityForResult(checkTTS, TTS_CHECK_ENABLED);
-  }
-
-  protected void onActivityResult(int requestCode, int resultCode, 
-      Intent data) 
-  {
-    if (requestCode == TTS_CHECK_ENABLED) 
-    {
-      if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) 
-      {
-        //the user has the necessary data - create the TTS
-//        myTTS = new TextToSpeech(this, this);
-        //do nothing here, because I will create the TTS in the service
-      }
-      else 
-      {
-        //no data - install it now
-        Intent installTTSIntent = new Intent();
-        installTTSIntent.setAction(
-            TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
-        startActivity(installTTSIntent);
-      }
-    }
-  }
-
   @Override
   public boolean onCreateOptionsMenu(Menu menu)
   {
@@ -153,12 +100,19 @@ public class mainActivity extends ListActivity
     switch (item.getItemId())
     {
       case R.id.menu_curve:
-        startActivity(make_chart_activity_intent(this));
+        if (battery_used_rate.size() < 1)
+        {
+          Toast.makeText(this, R.string.str_no_enough_data_for_curve, 5).show();
+        }
+        else
+        {
+          startActivity(make_chart_activity_intent(this));
+        }
         return true;
-      case R.id.menu_log:
-        Intent open_log = new Intent(this, LogActivity.class);
-        startActivity(open_log);
-        return true;
+//      case R.id.menu_log:
+//        Intent open_log = new Intent(this, LogActivity.class);
+//        startActivity(open_log);
+//        return true;
       case R.id.menu_setting:
         logv(this, "menu_setting is click");
         Intent open_setting = new Intent(this, SettingsActivity.class);
@@ -173,7 +127,6 @@ public class mainActivity extends ListActivity
   private Intent make_chart_activity_intent(Context context)
   {
     String title = getString(R.string.str_curve_title);
-    int length = battery_used_rate.size();
     int color_level = Color.CYAN;
     int color_rate = Color.GREEN;
     String x_title = getString(R.string.axis_x_time);
@@ -209,7 +162,7 @@ public class mainActivity extends ListActivity
     renderer.setPanEnabled(true, false);
     renderer.setPanLimits(
         new double[] {xmin - offset, xmax + offset, ymin, ymax});
-    renderer.setZoomEnabled(true, false);
+    renderer.setZoomEnabled(true, true);
     renderer.setZoomLimits(
         new double[] {xmin - offset, xmax + offset, ymin, ymax});
 
@@ -236,7 +189,7 @@ public class mainActivity extends ListActivity
 
     TimeSeries series_level = new TimeSeries(y_title_level);
     XYSeries series_rate = new XYSeries(y_title_rate, 1);
-    for (int i = 0; i < length; ++i)
+    for (int i = 0; i < list_count; ++i)
     {
       BatteryUsedRate bur = battery_used_rate.get(i);
       series_level.add(new Date(bur.time), bur.level);
@@ -248,7 +201,7 @@ public class mainActivity extends ListActivity
     XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
     dataset.addSeries(series_level);
     dataset.addSeries(series_rate);
-    return ChartFactory.getTimeChartIntent(context, dataset, renderer, "hh:mm");
+    return ChartFactory.getTimeChartIntent(context, dataset, renderer, "HH:mm");
   }
 }
 

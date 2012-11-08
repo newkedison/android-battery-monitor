@@ -3,8 +3,9 @@
   <CheckBoxPreference
       android:key="pref_service_enable"
       android:title="@string/pref_service_enable"
-      android:summary="@string/pref_sum_service_enabled"
-      android:defaultValue="true" />
+      android:defaultValue="true"
+      android:summaryOn="@string/pref_sum_service_enabled"
+      android:summaryOff="@string/pref_sum_service_disabled" />
   <EditTextPreference
       android:key="pref_list_size"
       android:title="@string/pref_list_size"
@@ -18,4 +19,10 @@
       android:entries="@array/pref_interval_entries"
       android:entryValues="@array/pref_interval_values"
       android:defaultValue="20" />
+  <CheckBoxPreference
+      android:key="pref_tts_enable"
+      android:title="@string/pref_tts_enable"
+      android:defaultValue="false" 
+      android:summaryOn="@string/pref_sum_tts_enabled"
+      android:summaryOff="@string/pref_sum_tts_disabled" />
 </PreferenceScreen>

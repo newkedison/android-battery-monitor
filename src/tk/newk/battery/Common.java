@@ -4,14 +4,13 @@ import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-import java.lang.Runnable;
-
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Locale;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -19,8 +18,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 
 import android.media.AudioManager;
-
-import android.os.AsyncTask;
 import android.os.BatteryManager;
 
 import android.speech.tts.TextToSpeech;
@@ -45,7 +42,7 @@ public class Common
   final static int HISTORY_FILE_RECORD_COUNT = 1000;
   final static int RECORD_LENGTH = 16;
   //uniqe ID for check TTS enabled
-  final static int TTS_CHECK_ENABLED = 0;
+  final static int ID_TTS_CHECK_ENABLED = 0;
   //power supply state
   final static int POWER_SUPPLY_STATE_UNKNOWN = 0;
   final static int POWER_SUPPLY_STATE_DISCONNECTED = 1;
@@ -55,6 +52,7 @@ public class Common
   final static String PREF_KEY_SERVICE_ENABLE = "pref_service_enable";
   final static String PREF_KEY_LIST_SIZE = "pref_list_size";
   final static String PREF_KEY_INTERVAL = "pref_interval";
+  final static String PREF_KEY_TTS_ENABLE = "pref_tts_enable";
 
   static boolean is_receiver_registed = false;
   static BatteryInfo[] buffer_data = new BatteryInfo[HISTORY_FILE_RECORD_COUNT];
@@ -68,18 +66,16 @@ public class Common
     = new BatteryChangedReceiver();
   static boolean is_service_foreground = false;
   static boolean is_TTS_checked = false;
-  static boolean is_TTS_complete = false;
   static boolean is_notification_init = false;
   static int power_supply_state = POWER_SUPPLY_STATE_UNKNOWN;
-
-  static TextToSpeech TTS = null;
-  static AudioManager audio_manager = null;
 
   static SharedPreferences global_setting = null;
   static Context service_context = null;
 
   static TextView lbl_current_battery_state = null;
   static String str_current_battery_state = "";
+
+  static TTS_helper TTS_helper_class = null;
 
   private static class _read_buffer
   {
@@ -213,10 +209,8 @@ public class Common
         && adapter_battery_used_rate != null)
     {
       battery_used_rate.clear();
-      int interval = Integer.parseInt(
-          global_setting.getString(PREF_KEY_INTERVAL, "5"));
-      int list_count = Integer.parseInt(
-          global_setting.getString(PREF_KEY_LIST_SIZE, "200"));
+      int interval = read_setting_int(PREF_KEY_INTERVAL, 5);
+      int list_count = read_setting_int(PREF_KEY_LIST_SIZE, 200);
       battery_used_rate.clear();
       parse_buffer_data_to_used_rate(battery_used_rate, 0, 
           interval, list_count);
@@ -232,15 +226,13 @@ public class Common
     {
       if (battery_used_rate.size() < 2)
         return recreate_battery_used_rate();
-      int interval = Integer.parseInt(
-        global_setting.getString(PREF_KEY_INTERVAL, "5"));
+      int interval = read_setting_int(PREF_KEY_INTERVAL, 5);
       long old_interval = 
         (battery_used_rate.get(0).time - battery_used_rate.get(1).time) 
         / 60000L;
       if (interval != old_interval)
         return recreate_battery_used_rate();
-      int list_count = Integer.parseInt(
-        global_setting.getString(PREF_KEY_LIST_SIZE, "200"));
+      int list_count = read_setting_int(PREF_KEY_LIST_SIZE, 200);
       ArrayList<BatteryUsedRate> addition = new ArrayList<BatteryUsedRate>();
       parse_buffer_data_to_used_rate(addition, battery_used_rate.get(0).time, 
             interval, 0);
@@ -258,76 +250,6 @@ public class Common
       }
     }
     return false;
-  }
-  public static int change_volume(int stream, int volume)
-  {
-    if (audio_manager != null)
-    {
-      int prev_volume = audio_manager.getStreamVolume(stream);
-      int max_volume = audio_manager.getStreamMaxVolume(stream);
-      if (volume > max_volume)
-        volume = max_volume;
-      audio_manager.setStreamVolume(stream, volume, 0);
-      logd("change_volume", "volume is change to ", str(volume));
-      return prev_volume;
-    }
-    return 0;
-  }
-
-  public static int change_volume(int stream, float scale)
-  {
-    if (audio_manager != null)
-    {
-      int max_volume = audio_manager.getStreamMaxVolume(stream);
-      return change_volume(stream, (int)(max_volume * scale));
-    }
-    return 0;
-  }
-
-  public static void say(final String what)
-  {
-    if (TTS != null)
-    {
-      TTS.speak(what, TextToSpeech.QUEUE_FLUSH, null);
-    }
-  }
-
-  public static void say(final String what, final float volume_scale)
-  {
-    if (TTS != null)
-    {
-      //use the AsyncTask to change volume to volumn_scale and change it back
-      //until the TTS has complete an utterance
-      //I had register a TextToSpeech.OnUtteranceCompletedListencer 
-      //in the MonitorService.onCreate() and change the is_TTS_complete there
-      AsyncTask.execute(new Runnable()
-        {
-          public void run()
-          {
-            int prev_volume = Common.change_volume(
-              AudioManager.STREAM_MUSIC, volume_scale);
-            HashMap<String, String> extra = new HashMap<String, String>();
-            extra.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "battery");
-            is_TTS_complete = false;
-            TTS.speak(what, TextToSpeech.QUEUE_FLUSH, extra);
-            try
-            {
-              int i = 10;
-              //when TTS speek complete, the TextToSpeech.OnUtteranceCompletedListener(registered in MonitorService.onCreate) will change is_TTS_complete to true
-              //and i is the max timeout
-              while (i > 0 && !is_TTS_complete)
-              {
-                Thread.sleep(1000, 0);
-                --i;
-              }
-            }
-            catch (Exception e)
-            { }
-            Common.change_volume(AudioManager.STREAM_MUSIC, prev_volume);
-          }
-        }
-      );
-    }
   }
 
   public static int find_latest_history_index()
@@ -356,6 +278,32 @@ public class Common
       }
     }while(is_found);
     return ret;
+  }
+
+  public static int read_setting_int(String key, int default_value)
+  {
+    try
+    {
+      return global_setting.getInt(key, default_value);
+    }
+    catch (ClassCastException e)
+    {
+      return Integer.parseInt(global_setting.getString(
+            key, Integer.toString(default_value)));
+    }
+  }
+
+  public static boolean read_setting_boolean(String key, boolean default_value)
+  {
+    try
+    {
+      return global_setting.getBoolean(key, default_value);
+    }
+    catch (ClassCastException e)
+    {
+      return Boolean.parseBoolean(global_setting.getString(
+            key, Boolean.toString(default_value)));
+    }
   }
 }
 
@@ -551,4 +499,113 @@ class BatteryInfo
   }
 }
 
+class TTS_helper implements TextToSpeech.OnInitListener, 
+               TextToSpeech.OnUtteranceCompletedListener
+{
+  private TextToSpeech m_TTS = null;
+  private String m_what;
+  private float m_volume;
+  private float m_pre_volume;
+  private AudioManager m_audio_manager;
+  private Context m_context;
+
+  public TTS_helper(Context context)
+  {
+    m_context = context;
+    m_audio_manager = (AudioManager)(context.getSystemService(
+        Context.AUDIO_SERVICE));
+  }
+
+  int change_volume(int stream, int volume)
+  {
+    int prev_volume = m_audio_manager.getStreamVolume(stream);
+    int max_volume = m_audio_manager.getStreamMaxVolume(stream);
+    if (volume > max_volume)
+      volume = max_volume;
+    m_audio_manager.setStreamVolume(stream, volume, 0);
+    logd("change_volume", "volume is change to ", str(volume));
+    return prev_volume;
+  }
+
+  int change_volume(int stream, float scale)
+  {
+    int max_volume = m_audio_manager.getStreamMaxVolume(stream);
+    return change_volume(stream, (int)(max_volume * scale));
+  }
+
+  public boolean say(String what, float volume_scale)
+  {
+    logv(this, "say", what, str(volume_scale));
+    if (m_TTS == null)
+    {
+      logv(this, "creating TTS");
+      m_what = what;
+      m_volume = volume_scale;
+      m_TTS = new TextToSpeech(m_context, this);
+      return true;
+    }
+    return false;
+  }
+
+  public boolean say(String what)
+  {
+    return say(what, -1f);
+  }
+
+  // interface TextToSpeech.OnInitListener
+  @SuppressWarnings("deprecation")
+  public void onInit(int initStatus) 
+  {
+    //check for successful instantiation
+    if (initStatus == TextToSpeech.SUCCESS) 
+    {
+      int result = m_TTS.isLanguageAvailable(Locale.US);
+      if (result != TextToSpeech.LANG_MISSING_DATA 
+          && result != TextToSpeech.LANG_NOT_SUPPORTED)
+      {
+        if (m_volume > 0 && m_volume <= 1)
+        {
+          m_pre_volume = change_volume(AudioManager.STREAM_MUSIC, m_volume);
+        }
+        else
+        {
+          m_pre_volume = -1;
+        }
+        m_TTS.setLanguage(Locale.US);
+        m_TTS.setOnUtteranceCompletedListener(this);
+        HashMap<String, String> extra = new HashMap<String, String>();
+        extra.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "battery");
+        m_TTS.speak(m_what, TextToSpeech.QUEUE_FLUSH, extra);
+      }
+      else
+      {
+        logw(this, "Chech language fail, TTS will be shutdown");
+        m_TTS.shutdown();
+        m_TTS = null;
+      }
+    }
+    else
+    {
+      logw(this, "Init TTS fail, TTS will be shutdown");
+      m_TTS.shutdown();
+      m_TTS = null;
+    }
+  }
+
+  // interface TextToSpeech.OnUtteranceCompletedListener
+  public void onUtteranceCompleted(String id)
+  {
+    logv(this, "TTS is complete");
+    if (m_pre_volume > 0)
+    {
+      change_volume(AudioManager.STREAM_MUSIC, m_pre_volume);
+      m_pre_volume = -1;
+    }
+    logv(this, "TTS will be shutdown");
+    m_TTS.shutdown();
+    m_TTS = null;
+  }
+}
+
 // vim: fdm=syntax fdl=1 fdn=2
+

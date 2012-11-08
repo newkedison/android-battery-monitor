@@ -10,10 +10,9 @@ import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.TwoStatePreference;
 
 import android.text.InputFilter;
-
-import android.widget.EditText;
 
 import static tk.newk.battery.Common.*;
 import static tk.newk.common.utils.*;
@@ -55,6 +54,16 @@ public class SettingsActivity extends PreferenceActivity
     implements OnSharedPreferenceChangeListener
 {
   @SuppressWarnings("deprecation")
+  private Preference set_integer_title(String key, String format, 
+      int default_value)
+  {
+    int value = read_setting_int(key, default_value);
+    Preference pref = findPreference(key);
+    pref.setTitle(String.format(format, value));
+    return pref;
+  }
+
+  @SuppressWarnings("deprecation")
   @Override
   public void onCreate(Bundle saveInstanceState)
   {
@@ -62,26 +71,27 @@ public class SettingsActivity extends PreferenceActivity
     addPreferencesFromResource(R.xml.preferences);
     getPreferenceScreen().getSharedPreferences()
       .registerOnSharedPreferenceChangeListener(this);
-    int list_size = Integer.parseInt(global_setting.getString(
-          PREF_KEY_LIST_SIZE, "200"));
-    Preference pref = findPreference(PREF_KEY_LIST_SIZE);
-    pref.setTitle(getString(R.string.pref_list_size) 
-        + String.format(": %d", list_size));
-    EditText edt = ((EditTextPreference)pref).getEditText();
     InputFilter[] filters = new InputFilter[1];
     filters[0] = new IntInputFilter(500);
-    edt.setFilters(filters);
-    int interval = Integer.parseInt(global_setting.getString(
-          PREF_KEY_INTERVAL, "5"));
-    pref = findPreference(PREF_KEY_INTERVAL);
-    pref.setTitle(getString(R.string.pref_interval)
-        + String.format(": %d minute(s)", interval));
+    ((EditTextPreference)findPreference(PREF_KEY_LIST_SIZE))
+      .getEditText().setFilters(filters);
   }
 
+  @SuppressWarnings("deprecation")
   @Override
   protected void onResume() 
   {
     super.onResume();
+    Preference pref = findPreference(PREF_KEY_SERVICE_ENABLE);
+    ((TwoStatePreference)pref).setChecked(
+        read_setting_boolean(PREF_KEY_SERVICE_ENABLE, true));
+    pref = findPreference(PREF_KEY_TTS_ENABLE); 
+    ((TwoStatePreference)pref).setChecked(
+        read_setting_boolean(PREF_KEY_TTS_ENABLE, false));
+    set_integer_title(PREF_KEY_LIST_SIZE, 
+        getString(R.string.pref_list_size) + ": %d", 200);
+    set_integer_title(PREF_KEY_INTERVAL,
+        getString(R.string.pref_interval) + ": %d minute(s)", 5);
   }
 
   @SuppressWarnings("deprecation")
@@ -113,24 +123,20 @@ public class SettingsActivity extends PreferenceActivity
     return value;
   }
 
-  @SuppressWarnings("deprecation")
   public void onSharedPreferenceChanged(SharedPreferences sharePreferences, 
       String key)
   {
     logv(this, "key", key);
     if (key.equals(PREF_KEY_SERVICE_ENABLE))
     {
-      Preference pref = findPreference(key);
       boolean service_enable = sharePreferences.getBoolean(key, true);
       if (service_enable)
       {
-        pref.setSummary(getString(R.string.pref_sum_service_enabled));
         Intent intent = new Intent(this, MonitorService.class);
         startService(intent);
       }
       else
       {
-        pref.setSummary(getString(R.string.pref_sum_service_disabled));
         Intent intent = new Intent(this, MonitorService.class);
         stopService(intent);
       }
@@ -138,18 +144,20 @@ public class SettingsActivity extends PreferenceActivity
     else if (key.equals(PREF_KEY_LIST_SIZE))
     {
       int list_size = check_range(sharePreferences, key, 200, 50, 500);
-      Preference pref = findPreference(key);
-      pref.setTitle(getString(R.string.pref_list_size) 
-          + String.format(": %d", list_size));
+      set_integer_title(PREF_KEY_LIST_SIZE, 
+          getString(R.string.pref_list_size) + ": %d", 200);
       logv(this, "list_size change to", str(list_size));
     }
     else if (key.equals(PREF_KEY_INTERVAL))
     {
       int interval = Integer.parseInt(sharePreferences.getString(key, "5"));
-      Preference pref = findPreference(key);
-      pref.setTitle(getString(R.string.pref_interval) 
-          + String.format(": %d minute(s)", interval));
+      set_integer_title(PREF_KEY_INTERVAL,
+          getString(R.string.pref_interval) + ": %d minute(s)", 5);
       logv(this, "interval change to", str(interval));
     }
   }
+
 }
+
+// vim: fdm=syntax fdl=1 fdn=2
+

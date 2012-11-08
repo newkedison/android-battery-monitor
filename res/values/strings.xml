@@ -19,6 +19,9 @@
     <string name="pref_sum_list_size">Range: 50~500 Default: 200</string>
     <string name="pref_interval">Interval</string>
     <string name="pref_sum_interval">the time between two record</string>
+    <string name="pref_tts_enable">Enable TTS(Text-to-Speech)</string>
+    <string name="pref_sum_tts_enabled">TTS is enabled</string>
+    <string name="pref_sum_tts_disabled">TTS is disabled</string>
     <string name="str_current_battery_state" formatted="false">Level:%d%% Voltage:%.3fV Temp:%.1f°C Health:%s</string>
     <string name="str_battery_health_unknown">Unknow</string>
     <string name="str_battery_health_cold">Cold</string>
@@ -28,6 +31,7 @@
     <string name="str_battery_health_error">Error</string>
     <string name="str_battery_health_over_heat">Over heat</string>
     <string name="str_curve_title">Battery Used Rate</string>
+    <string name="str_no_enough_data_for_curve">Too few data to make curve</string>
     <string name="axis_x_time">Time</string>
     <string name="axis_y_left_level">Level(%)</string>
     <string name="axis_y_right_rate">Rate(%)</string>
