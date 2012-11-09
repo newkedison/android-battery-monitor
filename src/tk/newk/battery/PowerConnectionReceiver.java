@@ -11,7 +11,7 @@ public class PowerConnectionReceiver extends BroadcastReceiver
   public void onReceive(Context context, Intent intent)
   {
     logv(this, "PowerConnectionReceiver receive broadcast");
-    if ( intent.getAction() == Intent.ACTION_POWER_CONNECTED)
+    if ( intent.getAction().equals(Intent.ACTION_POWER_CONNECTED))
     {
       logd(this, "Power is connected");
       power_supply_state = POWER_SUPPLY_STATE_CONNECTED;
@@ -21,7 +21,7 @@ public class PowerConnectionReceiver extends BroadcastReceiver
             "Power supply is connected, battery is charging", 0.5f);
       }
     }
-    else if (intent.getAction() == Intent.ACTION_POWER_DISCONNECTED)
+    else if (intent.getAction().equals(Intent.ACTION_POWER_DISCONNECTED))
     {
       logd(this, "Power is disconnected");
       power_supply_state = POWER_SUPPLY_STATE_DISCONNECTED;

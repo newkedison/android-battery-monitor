@@ -7,10 +7,10 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 
 import android.os.Bundle;
 
+import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.preference.TwoStatePreference;
 
 import android.text.InputFilter;
 
@@ -83,10 +83,10 @@ public class SettingsActivity extends PreferenceActivity
   {
     super.onResume();
     Preference pref = findPreference(PREF_KEY_SERVICE_ENABLE);
-    ((TwoStatePreference)pref).setChecked(
+    ((CheckBoxPreference)pref).setChecked(
         read_setting_boolean(PREF_KEY_SERVICE_ENABLE, true));
     pref = findPreference(PREF_KEY_TTS_ENABLE); 
-    ((TwoStatePreference)pref).setChecked(
+    ((CheckBoxPreference)pref).setChecked(
         read_setting_boolean(PREF_KEY_TTS_ENABLE, false));
     set_integer_title(PREF_KEY_LIST_SIZE, 
         getString(R.string.pref_list_size) + ": %d", 200);
