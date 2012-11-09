@@ -159,10 +159,10 @@ public class mainActivity extends ListActivity
     //set the y grid to 10, if possible
     renderer.setYLabels(10);
     renderer.setShowGrid(true);
-    renderer.setPanEnabled(true, true);
+    renderer.setPanEnabled(true, false);
     renderer.setPanLimits(
         new double[] {xmin - offset, xmax + offset, ymin, ymax});
-    renderer.setZoomEnabled(true, true);
+    renderer.setZoomEnabled(true, false);
     renderer.setZoomLimits(
         new double[] {xmin - offset, xmax + offset, ymin, ymax});
 

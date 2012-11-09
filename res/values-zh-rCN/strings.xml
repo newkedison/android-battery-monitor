@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">电池监视工具</string>
+    <string name="activity_title_main">电池监视</string>
+    <string name="activity_title_setting">参数设置</string>
+    <string name="activity_title_log">查看日志</string>
+    <string name="lbl_battery_level">当前电池状态:</string>
+    <string name="string_no_data">暂无数据,请稍后查看</string>
+    <string name="menu_curve">查看曲线</string>
+    <string name="menu_setting">参数设置</string>
+    <string name="menu_log">查看日志</string>
+    <string name="pref_service_enable">监视电池状态</string>
+    <string name="pref_sum_service_enabled">正在监视电池状态</string>
+    <string name="pref_sum_service_disabled">已停止监视电池状态</string>
+    <string name="pref_list_size">列表显示条数</string>
+    <string name="pref_sum_list_size">范围: 50~500 默认值: 200</string>
+    <string name="pref_interval">数据时间间隔</string>
+    <string name="pref_sum_interval">列表中两条记录之间的时间差</string>
+    <string name="pref_tts_enable">是否启用语音提示</string>
+    <string name="pref_sum_tts_enabled">语音提示已启用</string>
+    <string name="pref_sum_tts_disabled">语音提示已禁用</string>
+    <string name="str_current_battery_state" formatted="false">电量:%d%% 电压:%.3fV 电池温度:%.1f°C 状态:%s</string>
+    <string name="str_battery_health_unknown">未知</string>
+    <string name="str_battery_health_cold">温度低</string>
+    <string name="str_battery_health_dead">已损坏</string>
+    <string name="str_battery_health_good">正常</string>
+    <string name="str_battery_health_over_voltage">电压过高</string>
+    <string name="str_battery_health_error">故障</string>
+    <string name="str_battery_health_over_heat">温度过高</string>
+    <string name="str_curve_title">电池使用速率</string>
+    <string name="str_no_enough_data_for_curve">数据不足,无法显示曲线</string>
+    <string name="axis_x_time">时间</string>
+    <string name="axis_y_left_level">电量(%)</string>
+    <string name="axis_y_right_rate">电量变化量(%)</string>
+
+</resources>

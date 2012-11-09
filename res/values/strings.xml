@@ -7,8 +7,6 @@
     <string name="activity_title_log">View Log</string>
     <string name="lbl_battery_level">Battery Status:</string>
     <string name="string_no_data">no data now</string>
-    <string name="btn_start_service">Start</string>
-    <string name="btn_stop_service">Stop</string>
     <string name="menu_curve">Curve</string>
     <string name="menu_setting">Setting</string>
     <string name="menu_log">Log</string>
