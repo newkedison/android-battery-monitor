@@ -30,6 +30,8 @@
     <string name="str_battery_health_over_heat">温度过高</string>
     <string name="str_curve_title">电池使用速率</string>
     <string name="str_no_enough_data_for_curve">数据不足,无法显示曲线</string>
+    <string name="str_notification_content_title" formatted="false">当前电量: %02d%%</string>
+    <string name="str_notification_content_text">点击这里查看更详细的信息</string>
     <string name="axis_x_time">时间</string>
     <string name="axis_y_left_level">电量(%)</string>
     <string name="axis_y_right_rate">电量变化量(%)</string>

@@ -30,6 +30,8 @@
     <string name="str_battery_health_over_heat">Over heat</string>
     <string name="str_curve_title">Battery Used Rate</string>
     <string name="str_no_enough_data_for_curve">Too few data to make curve</string>
+    <string name="str_notification_content_title" formatted="false">Level: %02d%%</string>
+    <string name="str_notification_content_text">Click for more detail</string>
     <string name="axis_x_time">Time</string>
     <string name="axis_y_left_level">Level(%)</string>
     <string name="axis_y_right_rate">Rate(%)</string>

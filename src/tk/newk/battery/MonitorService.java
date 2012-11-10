@@ -252,17 +252,6 @@ public class MonitorService extends Service
     logw(this, "service is Destroy");
   }
 
-  int get_icon_id(int level)
-  {
-    if (level < 0 || level > 100)
-      return R.drawable.red_000;
-    if (level <= 20)
-      return R.drawable.red_000 + level;
-    if (level <= 40)
-      return R.drawable.yellow_020 + level - 20;
-    return R.drawable.blue_040 + level - 40;
-  }
-
   private NotificationCompat.Builder m_builder;
 
   void update_notification(BatteryInfo bi)
@@ -281,15 +270,37 @@ public class MonitorService extends Service
     }
     if (bi != null)
     {
-      int icon_id = get_icon_id(bi.level);
-      m_builder.setSmallIcon(icon_id)
-          .setContentTitle(String.format("Level: %02d%%", bi.level))
-          .setContentText("click to see more detail")
+      //Hint by newk
+      //I want to use LevelListDrawable to change icon of the notification
+      //but for unknown reason, the large icon will not change with the 
+      //`setSmallIcon(int, int)`, (FYI, `setSmallIcon(int)` is OK)
+      //
+      //so I need to use `setLargeIcon(Bitmap)` to change the large icon
+      //and then there is a side effect, 
+      //in Android4.1, there will be an additional small icon 
+      //show in the right-bottom corner of the notification
+      //in Android2.3, the large icon will not change
+      //
+      //so at last, I give up to use LevelListDrawable, I calulate the 
+      //id of icons manually
+      
+//      Drawable icon_list = getResources().getDrawable(R.drawable.icons);
+//      icon_list.setLevel(bi.level);
+      m_builder
+//          .setSmallIcon(R.drawable.icons, bi.level)
+//          .setLargeIcon(((BitmapDrawable)icon_list.getCurrent()).getBitmap())
+          .setSmallIcon(R.drawable.level_001 + bi.level - 1)
+          .setContentTitle(String.format(getString(R.string.str_notification_content_title), bi.level))
+          .setContentText(getString(R.string.str_notification_content_text))
           .setOngoing(true);
       NotificationManager nm = (NotificationManager)getSystemService(
           Context.NOTIFICATION_SERVICE);
+      //Hint: this way also make no effect on the large icon
+//      Notification n = m_builder.build();
+//      n.icon = R.drawable.icons;
+//      n.iconLevel = bi.level;
+//      nm.notify(ID_NOTIFICATION, n);
       nm.notify(ID_NOTIFICATION, m_builder.build());
-      logv(this, "judge TTS", str(read_setting_boolean(PREF_KEY_TTS_ENABLE, false)));
       if (read_setting_boolean(PREF_KEY_TTS_ENABLE, false))
       {
         if (bi.level <= 25 && bi.level > 15 && bi.level % 2 == 0
