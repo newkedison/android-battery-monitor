@@ -1,6 +1,6 @@
-==Battery Monitor
+##Battery Monitor
 
-===Introduce
+###Introduce
 
 _This is my first common Android app, as a newbie of Android and JAVA, I had
 learn many thing from developing this app. Please contract me if you have
@@ -11,13 +11,13 @@ of battery level is changed, it will calculate the used rate in this period.
 It also private a chart to show two visual curve to show change of battery level
 and battery used rate.
 
-===Download Apk
+###Download Apk
 
 If you only want to use this app, you can directly download the latest 
 **release** version in the 
 [Download List](https://github.com/newkedison/android-battery-monitor/downloads)
 
-===Compile form source code
+###Compile form source code
 
 If you want to compile the source code and sign with your own key, you can
 clone this project and compile it yourself.
