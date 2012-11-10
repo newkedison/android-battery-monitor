@@ -103,6 +103,27 @@ public class SettingsActivity extends PreferenceActivity
       .unregisterOnSharedPreferenceChangeListener(this);
   } 
 
+  @Override
+  protected void onPause()
+  {
+    super.onPause();
+    int new_list_size = read_setting_int(PREF_KEY_LIST_SIZE, 200);
+    int old_list_size = battery_used_rate.size();
+    if (new_list_size < old_list_size)
+    {
+      for (int i = old_list_size - 1; i >= new_list_size; --i)
+      {
+        battery_used_rate.remove(i);
+      }
+      if(adapter_battery_used_rate != null)
+        adapter_battery_used_rate.notifyDataSetChanged();
+    }
+    else
+    {
+      battery_used_rate.clear();
+    }
+  }
+
   private int check_range(SharedPreferences sharePreferences, 
       String key, int default_value, int min, int max)
   {

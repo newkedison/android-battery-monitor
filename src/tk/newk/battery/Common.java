@@ -241,7 +241,7 @@ public class Common
         battery_used_rate.addAll(0, addition);
         if (battery_used_rate.size() > list_count)
         {
-          for (int i = battery_used_rate.size() - 1; i > list_count; --i)
+          for (int i = battery_used_rate.size() - 1; i >= list_count; --i)
           {
             battery_used_rate.remove(i);
           }
