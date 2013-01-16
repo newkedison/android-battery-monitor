@@ -53,6 +53,11 @@ public class Common
   final static String PREF_KEY_LIST_SIZE = "pref_list_size";
   final static String PREF_KEY_INTERVAL = "pref_interval";
   final static String PREF_KEY_TTS_ENABLE = "pref_tts_enable";
+  final static String PREF_KEY_TTS_LOW_ALARM = "pref_tts_low_alarm";
+  final static String PREF_KEY_TTS_VERY_LOW_ALARM = "pref_tts_very_low_alarm";
+  final static String PREF_KEY_TTS_CHARGE_PROGRESS = "pref_tts_charge_progress";
+  final static String PREF_KEY_TTS_USED_PROGRESS = "pref_tts_used_progress";
+  final static String PREF_KEY_TTS_POWER_STATE = "pref_tts_power_state";
 
   static boolean is_receiver_registed = false;
   static BatteryInfo[] buffer_data = new BatteryInfo[HISTORY_FILE_RECORD_COUNT];
@@ -505,7 +510,7 @@ class TTS_helper implements TextToSpeech.OnInitListener,
   private TextToSpeech m_TTS = null;
   private String m_what;
   private float m_volume;
-  private float m_pre_volume;
+  private int m_pre_volume;
   private AudioManager m_audio_manager;
   private Context m_context;
 

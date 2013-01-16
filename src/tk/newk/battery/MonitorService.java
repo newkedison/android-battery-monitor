@@ -69,10 +69,6 @@ public class MonitorService extends Service
     service_context = this;
     if (update_battery_used_rate_list())
       adapter_battery_used_rate.notifyDataSetChanged();
-    if (read_setting_boolean(PREF_KEY_TTS_ENABLE, false))
-    {
-
-    }
     logv(this, "service is created");
   }
 
@@ -301,39 +297,49 @@ public class MonitorService extends Service
 //      n.iconLevel = bi.level;
 //      nm.notify(ID_NOTIFICATION, n);
       nm.notify(ID_NOTIFICATION, m_builder.build());
-      if (read_setting_boolean(PREF_KEY_TTS_ENABLE, false))
-      {
-        if (bi.level <= 25 && bi.level > 15 && bi.level % 2 == 0
-            && power_supply_state != POWER_SUPPLY_STATE_CONNECTED)
-        {
-          TTS_helper_class.say("battery level is low, please charge", 1.0f);
-        }
-        else if (bi.level <= 15 
-            && power_supply_state != POWER_SUPPLY_STATE_CONNECTED)
-        {
-          TTS_helper_class.say(
-              "battery level is very low, please charge immediately", 1.0f);
-        }
-        else if (bi.level % 10 == 0
-            && (
-                //alert when not charge and level is 0, 10, 20, 30, 40
-                (power_supply_state == POWER_SUPPLY_STATE_DISCONNECTED 
-                  && bi.level < 50)
-                || 
-                //alert when charging and level is 50, 60, 70, 80, 90
-                (power_supply_state == POWER_SUPPLY_STATE_CONNECTED
-                  && bi.level > 40 && bi.level < 100)
-               ))
-        {
-          TTS_helper_class.say(
-              String.format("battery level is %d percent", bi.level), 0.5f);
-        }
-        else if (bi.level == 100 
-            && power_supply_state == POWER_SUPPLY_STATE_CONNECTED)
-        {
-          TTS_helper_class.say("I am full", 0.5f);
-        }
+      TTS_show_level(bi.level);
+    }
+  }
 
+  void TTS_show_level(int level)
+  {
+    if (read_setting_boolean(PREF_KEY_TTS_ENABLE, false))
+    {
+      if (read_setting_boolean(PREF_KEY_TTS_LOW_ALARM, true)
+          && power_supply_state != POWER_SUPPLY_STATE_CONNECTED
+          && (level == 25 || level == 23 || level == 21 || level == 19
+              || level == 17))
+      {
+        TTS_helper_class.say("battery level is low, please charge", 1.0f);
+      }
+      if (read_setting_boolean(PREF_KEY_TTS_VERY_LOW_ALARM, true)
+          && power_supply_state != POWER_SUPPLY_STATE_CONNECTED
+          && (level == 15 || level == 13 || level == 11 || level == 9
+              || level == 7 || level == 5 || level == 3))
+      {
+        TTS_helper_class.say(
+            "battery level is very low, please charge immediately", 1.0f);
+      }
+      if (read_setting_boolean(PREF_KEY_TTS_CHARGE_PROGRESS, true)
+          && power_supply_state == POWER_SUPPLY_STATE_CONNECTED
+          && (level == 50 || level == 60 || level == 70 || level == 80
+              || level == 90 || level == 95 || level == 99))
+      {
+        TTS_helper_class.say(
+            String.format("battery level is %d percent", level), 0.5f);
+      }
+      if (read_setting_boolean(PREF_KEY_TTS_USED_PROGRESS, true)
+          && power_supply_state != POWER_SUPPLY_STATE_CONNECTED
+          && (level == 50 || level == 40 || level == 30))
+      {
+        TTS_helper_class.say(
+            String.format("battery level is %d percent", level), 0.5f);
+      }
+      if (read_setting_boolean(PREF_KEY_TTS_CHARGE_PROGRESS, true)
+          && power_supply_state == POWER_SUPPLY_STATE_CONNECTED
+          && (level == 100))
+      {
+        TTS_helper_class.say("I am full", 0.5f);
       }
     }
   }
