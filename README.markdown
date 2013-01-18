@@ -19,9 +19,9 @@ Unfortunately, github
 recently. So I will upload the **release** apk to another place in the future.
 
 
-If you only want to use this app, you can directly download the latest 
+~~If you only want to use this app, you can directly download the latest 
 **release** version in the 
-[Download List](https://github.com/newkedison/android-battery-monitor/downloads)
+[Download List](https://github.com/newkedison/android-battery-monitor/downloads)~~
 
 ###Compile form source code
 
@@ -31,7 +31,8 @@ clone this project and compile it yourself.
 **NOTE**: In order to reuse some code, I had extract them into another repo.
 You can find them in
 [newkedison/android-library](https://github.com/newkedison/android-library).
-You must clone this library repo too, and put these two repos in a same folder.
+You must clone this library repo too, and put these two repos in the same
+folder.
 
 Because I develop it with [VIM](http://www.vim.org) 
 and [eclim](http://eclim.org) and compile it by command line, if you
