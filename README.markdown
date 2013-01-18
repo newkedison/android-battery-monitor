@@ -7,11 +7,17 @@ learn many thing from developing this app. Please contract me if you have
 any suggestion._
 
 This app focus on monitoring the battery level. After detecting the percentage
-of battery level is changed, it will calculate the used rate in this period.
-It also provide a chart to show two visual curve to show change of battery level
+of battery level being changed, it will calculate the used rate in this period.
+It also provide a chart to show two visual curve for change of battery level
 and battery used rate.
 
 ###Download Apk
+
+**NOTE**
+Unfortunately, github
+[deprecated download page](https://github.com/blog/1302-goodbye-uploads)
+recently. So I will upload the **release** apk to another place in the future.
+
 
 If you only want to use this app, you can directly download the latest 
 **release** version in the 
@@ -21,6 +27,11 @@ If you only want to use this app, you can directly download the latest
 
 If you want to compile the source code and sign with your own key, you can
 clone this project and compile it yourself.
+
+**NOTE**: In order to reuse some code, I had extract them into another repo.
+You can find them in
+[newkedison/android-library](https://github.com/newkedison/android-library).
+You must clone this library repo too, and put these two repos in a same folder.
 
 Because I develop it with [VIM](http://www.vim.org) 
 and [eclim](http://eclim.org) and compile it by command line, if you

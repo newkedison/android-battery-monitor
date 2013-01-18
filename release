@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pass=`cat /home/newk/android/password_for_newk_test_key`
+pass=`cat $HOME/android/password_for_newk_test_key`
 ant clean release \
   && jarsigner -sigalg MD5withRSA -digestalg SHA1 \
        -keystore ~/android/newk_test_key.keystore -storepass $pass \
