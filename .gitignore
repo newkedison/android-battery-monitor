@@ -1,9 +1,4 @@
 .*
-l
-s
-v
 bin
 gen
 local.properties
-log
-ftp_send
