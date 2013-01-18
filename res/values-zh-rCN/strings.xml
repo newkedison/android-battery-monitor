@@ -18,8 +18,25 @@
     <string name="pref_interval">数据时间间隔</string>
     <string name="pref_sum_interval">列表中两条记录之间的时间差</string>
     <string name="pref_tts_enable">是否启用语音提示</string>
-    <string name="pref_sum_tts_enabled">语音提示已启用</string>
-    <string name="pref_sum_tts_disabled">语音提示已禁用</string>
+    <string name="pref_summaryon_tts_enable">语音提示已启用</string>
+    <string name="pref_summaryoff_tts_enable">语音提示已禁用</string>
+    <string name="pref_tts_detail">语音提示详细设置</string>
+    <string name="pref_tts_silent_in_night">夜间静音</string>
+    <string name="pref_summaryon_tts_silent_in_night">在10:00PM~7:00AM之间禁止发生</string>
+    <string name="pref_summaryoff_tts_silent_in_night">始终允许发声</string>
+    <string name="pref_tts_low_alarm">低电量提示</string>
+    <string name="pref_summaryon_tts_low_alarm">当电量为25, 23, 21, 19, 17时提示</string>
+    <string name="pref_summaryoff_tts_low_alarm">不提示</string>
+    <string name="pref_tts_very_low_alarm">超低电量提示</string>
+    <string name="pref_summaryon_tts_very_low_alarm">当电量为15, 13, 11, 9, 7, 5, 3时提示</string>
+    <string name="pref_summaryoff_tts_very_low_alarm">不提示</string>
+    <string name="pref_tts_charge_progress">充电进度提示</string>
+    <string name="pref_summaryon_tts_charge_progress">当正在充电且电量为50, 60, 70, 80, 90, 95, 99, 100时提示</string>
+    <string name="pref_summaryoff_tts_charge_progress">不提示</string>
+    <string name="pref_tts_used_progress">电量消耗提示</string>
+    <string name="pref_summaryon_tts_used_progress">当未充电且电量为50, 40, 30时提示</string>
+    <string name="pref_summaryoff_tts_used_progress">不提示</string>
+    <string name="pref_tts_power_state">充电状态提示</string>
     <string name="str_current_battery_state" formatted="false">电量:%d%% 电压:%.3fV 电池温度:%.1f°C 状态:%s</string>
     <string name="str_battery_health_unknown">未知</string>
     <string name="str_battery_health_cold">温度低</string>

@@ -18,8 +18,25 @@
     <string name="pref_interval">Interval</string>
     <string name="pref_sum_interval">the time between two record</string>
     <string name="pref_tts_enable">Enable TTS(Text-to-Speech)</string>
-    <string name="pref_sum_tts_enabled">TTS is enabled</string>
-    <string name="pref_sum_tts_disabled">TTS is disabled</string>
+    <string name="pref_summaryon_tts_enable">TTS is enabled</string>
+    <string name="pref_summaryoff_tts_enable">TTS is disabled</string>
+    <string name="pref_tts_detail">TTS detail setting</string>
+    <string name="pref_tts_silent_in_night">TTS silent in night</string>
+    <string name="pref_summaryon_tts_silent_in_night">Keep silent when 10:00PM~7:00AM</string>
+    <string name="pref_summaryoff_tts_silent_in_night">TTS always on</string>
+    <string name="pref_tts_low_alarm">Alarm for low level</string>
+    <string name="pref_summaryon_tts_low_alarm">when level=25, 23, 21, 19, 17</string>
+    <string name="pref_summaryoff_tts_low_alarm">OFF</string>
+    <string name="pref_tts_very_low_alarm">Alarm for very low level</string>
+    <string name="pref_summaryon_tts_very_low_alarm">when level=15, 13, 11, 9, 7, 5, 3</string>
+    <string name="pref_summaryoff_tts_very_low_alarm">OFF</string>
+    <string name="pref_tts_charge_progress">Alarm for charging progress</string>
+    <string name="pref_summaryon_tts_charge_progress">when charging and level=50, 60, 70, 80, 90, 95, 99, 100</string>
+    <string name="pref_summaryoff_tts_charge_progress">OFF</string>
+    <string name="pref_tts_used_progress">Alarm for used progress</string>
+    <string name="pref_summaryon_tts_used_progress">when discharged and level=50, 40, 30</string>
+    <string name="pref_summaryoff_tts_used_progress">OFF</string>
+    <string name="pref_tts_power_state">Alarm for power state changed</string>
     <string name="str_current_battery_state" formatted="false">Level:%d%% Voltage:%.3fV Temp:%.1f°C Health:%s</string>
     <string name="str_battery_health_unknown">Unknow</string>
     <string name="str_battery_health_cold">Cold</string>

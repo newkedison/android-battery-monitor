@@ -23,6 +23,44 @@
       android:key="pref_tts_enable"
       android:title="@string/pref_tts_enable"
       android:defaultValue="false" 
-      android:summaryOn="@string/pref_sum_tts_enabled"
-      android:summaryOff="@string/pref_sum_tts_disabled" />
+      android:summaryOn="@string/pref_summaryon_tts_enable"
+      android:summaryOff="@string/pref_summaryoff_tts_enable" />
+  <PreferenceCategory 
+      android:title="@string/pref_tts_detail"
+      android:key="pref_tts_detail">
+    <CheckBoxPreference
+        android:key="pref_tts_silent_in_night"
+        android:title="@string/pref_tts_silent_in_night"
+        android:defaultValue="true" 
+        android:summaryOn="@string/pref_summaryon_tts_silent_in_night"
+        android:summaryOff="@string/pref_summaryoff_tts_silent_in_night" />
+    <CheckBoxPreference
+        android:key="pref_tts_low_alarm"
+        android:title="@string/pref_tts_low_alarm"
+        android:defaultValue="true" 
+        android:summaryOn="@string/pref_summaryon_tts_low_alarm"
+        android:summaryOff="@string/pref_summaryoff_tts_low_alarm" />
+    <CheckBoxPreference
+        android:key="pref_tts_very_low_alarm"
+        android:title="@string/pref_tts_very_low_alarm"
+        android:defaultValue="true" 
+        android:summaryOn="@string/pref_summaryon_tts_very_low_alarm"
+        android:summaryOff="@string/pref_summaryoff_tts_very_low_alarm" />
+    <CheckBoxPreference
+        android:key="pref_tts_charge_progress"
+        android:title="@string/pref_tts_charge_progress"
+        android:defaultValue="true" 
+        android:summaryOn="@string/pref_summaryon_tts_charge_progress"
+        android:summaryOff="@string/pref_summaryoff_tts_charge_progress" />
+    <CheckBoxPreference
+        android:key="pref_tts_used_progress"
+        android:title="@string/pref_tts_used_progress"
+        android:defaultValue="true" 
+        android:summaryOn="@string/pref_summaryon_tts_used_progress"
+        android:summaryOff="@string/pref_summaryoff_tts_used_progress" />
+    <CheckBoxPreference
+        android:key="pref_tts_power_state"
+        android:title="@string/pref_tts_power_state"
+        android:defaultValue="true" />
+  </PreferenceCategory>
 </PreferenceScreen>

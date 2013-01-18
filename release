@@ -1,5 +1,10 @@
 #!/bin/bash
 
 pass=`cat /home/newk/android/password_for_newk_test_key`
-ant clean release && jarsigner -sigalg MD5withRSA -digestalg SHA1 -keystore ~/android/newk_test_key.keystore -storepass $pass -keypass $pass bin/mainActivity-release-unsigned.apk newk && rm -f bin/Battery.apk && zipalign 4 bin/mainActivity-release-unsigned.apk bin/Battery.apk
+ant clean release \
+  && jarsigner -sigalg MD5withRSA -digestalg SHA1 \
+       -keystore ~/android/newk_test_key.keystore -storepass $pass \
+       -keypass $pass bin/mainActivity-release-unsigned.apk newk \
+  && rm -f bin/Battery.apk \
+  && zipalign 4 bin/mainActivity-release-unsigned.apk bin/Battery.apk
 echo =========complete================

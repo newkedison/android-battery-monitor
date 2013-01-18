@@ -78,15 +78,28 @@ public class SettingsActivity extends PreferenceActivity
   }
 
   @SuppressWarnings("deprecation")
+  private Preference init_checkbox(String key, boolean default_value)
+  {
+    Preference pref = findPreference(key);
+    ((CheckBoxPreference)pref).setChecked(
+        read_setting_boolean(key, default_value));
+    return pref;
+  }
+
+  @SuppressWarnings("deprecation")
   @Override
   protected void onResume() 
   {
     super.onResume();
-    Preference pref = findPreference(PREF_KEY_SERVICE_ENABLE);
-    ((CheckBoxPreference)pref).setChecked(
-        read_setting_boolean(PREF_KEY_SERVICE_ENABLE, true));
-    pref = findPreference(PREF_KEY_TTS_ENABLE); 
-    ((CheckBoxPreference)pref).setChecked(
+    init_checkbox(PREF_KEY_SERVICE_ENABLE, true);
+    init_checkbox(PREF_KEY_TTS_ENABLE, false);
+    init_checkbox(PREF_KEY_TTS_LOW_ALARM, true);
+    init_checkbox(PREF_KEY_TTS_VERY_LOW_ALARM, true);
+    init_checkbox(PREF_KEY_TTS_CHARGE_PROGRESS, true);
+    init_checkbox(PREF_KEY_TTS_USED_PROGRESS, true);
+    init_checkbox(PREF_KEY_TTS_POWER_STATE, true);
+    init_checkbox(PREF_KEY_TTS_SILENT_IN_NIGHT, true);
+    findPreference(PREF_KEY_TTS_DETAIL).setEnabled(
         read_setting_boolean(PREF_KEY_TTS_ENABLE, false));
     set_integer_title(PREF_KEY_LIST_SIZE, 
         getString(R.string.pref_list_size) + ": %d", 200);
@@ -144,6 +157,7 @@ public class SettingsActivity extends PreferenceActivity
     return value;
   }
 
+  @SuppressWarnings("deprecation")
   public void onSharedPreferenceChanged(SharedPreferences sharePreferences, 
       String key)
   {
@@ -175,6 +189,12 @@ public class SettingsActivity extends PreferenceActivity
       set_integer_title(PREF_KEY_INTERVAL,
           getString(R.string.pref_interval) + ": %d minute(s)", 5);
       logv(this, "interval change to", str(interval));
+    }
+    else if (key.equals(PREF_KEY_TTS_ENABLE))
+    {
+      Preference pref = findPreference(PREF_KEY_TTS_ENABLE);
+      findPreference(PREF_KEY_TTS_DETAIL).setEnabled(
+          ((CheckBoxPreference)pref).isChecked());
     }
   }
 

@@ -303,7 +303,7 @@ public class MonitorService extends Service
 
   void TTS_show_level(int level)
   {
-    if (read_setting_boolean(PREF_KEY_TTS_ENABLE, false))
+    if (can_speak())
     {
       if (read_setting_boolean(PREF_KEY_TTS_LOW_ALARM, true)
           && power_supply_state != POWER_SUPPLY_STATE_CONNECTED
@@ -325,6 +325,7 @@ public class MonitorService extends Service
           && (level == 50 || level == 60 || level == 70 || level == 80
               || level == 90 || level == 95 || level == 99))
       {
+        logv(this, "start to say");
         TTS_helper_class.say(
             String.format("battery level is %d percent", level), 0.5f);
       }
@@ -343,7 +344,6 @@ public class MonitorService extends Service
       }
     }
   }
-
 }
 
 // vim: fdm=syntax fdl=1 fdn=2

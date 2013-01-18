@@ -53,11 +53,14 @@ public class Common
   final static String PREF_KEY_LIST_SIZE = "pref_list_size";
   final static String PREF_KEY_INTERVAL = "pref_interval";
   final static String PREF_KEY_TTS_ENABLE = "pref_tts_enable";
+  final static String PREF_KEY_TTS_DETAIL = "pref_tts_detail";
   final static String PREF_KEY_TTS_LOW_ALARM = "pref_tts_low_alarm";
   final static String PREF_KEY_TTS_VERY_LOW_ALARM = "pref_tts_very_low_alarm";
   final static String PREF_KEY_TTS_CHARGE_PROGRESS = "pref_tts_charge_progress";
   final static String PREF_KEY_TTS_USED_PROGRESS = "pref_tts_used_progress";
   final static String PREF_KEY_TTS_POWER_STATE = "pref_tts_power_state";
+  final static String PREF_KEY_TTS_SILENT_IN_NIGHT 
+                                = "pref_tts_silent_in_night";
 
   static boolean is_receiver_registed = false;
   static BatteryInfo[] buffer_data = new BatteryInfo[HISTORY_FILE_RECORD_COUNT];
@@ -309,6 +312,21 @@ public class Common
       return Boolean.parseBoolean(global_setting.getString(
             key, Boolean.toString(default_value)));
     }
+  }
+
+  public static boolean can_speak()
+  {
+    if (!read_setting_boolean(PREF_KEY_TTS_ENABLE, false))
+      return false;
+    if (read_setting_boolean(PREF_KEY_TTS_SILENT_IN_NIGHT, true))
+    {
+      int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+      if (hour >= 22 || hour < 7)
+      {
+        return false;
+      }
+    }
+    return true;
   }
 }
 
