@@ -19,6 +19,34 @@
       android:entries="@array/pref_interval_entries"
       android:entryValues="@array/pref_interval_values"
       android:defaultValue="20" />
+  <PreferenceCategory 
+      android:title="@string/pref_axis_setting"
+      android:key="pref_axis_setting">
+    <EditTextPreference
+        android:key="pref_axis_left_max"
+        android:title="@string/pref_axis_left_max"
+        android:summary="@string/pref_sum_axis_left_max"
+        android:defaultValue="100"
+        android:inputType="number" />
+    <EditTextPreference
+        android:key="pref_axis_left_min"
+        android:title="@string/pref_axis_left_min"
+        android:summary="@string/pref_sum_axis_left_min"
+        android:defaultValue="0"
+        android:inputType="number" />
+    <EditTextPreference
+        android:key="pref_axis_right_max"
+        android:title="@string/pref_axis_right_max"
+        android:summary="@string/pref_sum_axis_right_max"
+        android:defaultValue="10"
+        android:inputType="number" />
+    <EditTextPreference
+        android:key="pref_axis_right_min"
+        android:title="@string/pref_axis_right_min"
+        android:summary="@string/pref_sum_axis_right_min"
+        android:defaultValue="-10"
+        android:inputType="number" />
+  </PreferenceCategory>
   <CheckBoxPreference
       android:key="pref_tts_enable"
       android:title="@string/pref_tts_enable"

@@ -132,7 +132,14 @@ public class mainActivity extends ListActivity
     String x_title = getString(R.string.axis_x_time);
     String y_title_level = getString(R.string.axis_y_left_level);
     String y_title_rate = getString(R.string.axis_y_right_rate);
-    double ymin = 0, ymax = 100;
+    double ymin = read_setting_int(PREF_KEY_AXIS_LEFT_MIN, 0);
+    double ymax = read_setting_int(PREF_KEY_AXIS_LEFT_MAX, 100);
+    if (ymin >= ymax)
+    {
+      loge(this, "ymin >= ymax");
+      ymin = 0;
+      ymax = 100;
+    }
     int list_count = battery_used_rate.size();
     double xmin = battery_used_rate.get(list_count - 1).time;
     double xmax = battery_used_rate.get(0).time;
@@ -195,8 +202,16 @@ public class mainActivity extends ListActivity
       series_level.add(new Date(bur.time), bur.level);
       series_rate.add(bur.time, bur.rate);
     }
-    renderer.setYAxisMin(-10, 1);
-    renderer.setYAxisMax(10, 1);
+    double ymin2 = read_setting_int(PREF_KEY_AXIS_RIGHT_MIN, -10);
+    double ymax2 = read_setting_int(PREF_KEY_AXIS_RIGHT_MAX, 10);
+    if (ymin2 >= ymax2)
+    {
+      loge(this, "ymin2 >= ymax2");
+      ymin2 = -10;
+      ymax2 = 10;
+    }
+    renderer.setYAxisMin(ymin2, 1);
+    renderer.setYAxisMax(ymax2, 1);
 
     XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
     dataset.addSeries(series_level);

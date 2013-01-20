@@ -105,6 +105,14 @@ public class SettingsActivity extends PreferenceActivity
         getString(R.string.pref_list_size) + ": %d", 200);
     set_integer_title(PREF_KEY_INTERVAL,
         getString(R.string.pref_interval) + ": %d minute(s)", 5);
+    set_integer_title(PREF_KEY_AXIS_LEFT_MAX, 
+        getString(R.string.pref_axis_left_max) + ": %d", 100);
+    set_integer_title(PREF_KEY_AXIS_LEFT_MIN, 
+        getString(R.string.pref_axis_left_min) + ": %d", 0);
+    set_integer_title(PREF_KEY_AXIS_RIGHT_MAX, 
+        getString(R.string.pref_axis_right_max) + ": %d", 10);
+    set_integer_title(PREF_KEY_AXIS_RIGHT_MIN, 
+        getString(R.string.pref_axis_right_min) + ": %d", -10);
   }
 
   @SuppressWarnings("deprecation")
@@ -140,8 +148,7 @@ public class SettingsActivity extends PreferenceActivity
   private int check_range(SharedPreferences sharePreferences, 
       String key, int default_value, int min, int max)
   {
-    int value = Integer.parseInt(sharePreferences.getString(key, 
-          Integer.toString(default_value)));
+    int value = read_setting_int(key, default_value);
     int new_value = value;
     if (value < min)
       new_value = min;
@@ -182,6 +189,38 @@ public class SettingsActivity extends PreferenceActivity
       set_integer_title(PREF_KEY_LIST_SIZE, 
           getString(R.string.pref_list_size) + ": %d", 200);
       logv(this, "list_size change to", str(list_size));
+    }
+    else if (key.equals(PREF_KEY_AXIS_LEFT_MAX))
+    {
+      int value = check_range(sharePreferences, key, 100, 
+          read_setting_int(PREF_KEY_AXIS_LEFT_MIN, 0) + 1, 200);
+      set_integer_title(PREF_KEY_AXIS_LEFT_MAX,
+          getString(R.string.pref_axis_left_max) + ": %d", 100);
+      logv(this, "left axis max change to", str(value));
+    }
+    else if (key.equals(PREF_KEY_AXIS_LEFT_MIN))
+    {
+      int value = check_range(sharePreferences, key, 0, -100,
+          read_setting_int(PREF_KEY_AXIS_LEFT_MAX, 100) - 1);
+      set_integer_title(PREF_KEY_AXIS_LEFT_MIN,
+          getString(R.string.pref_axis_left_min) + ": %d", 100);
+      logv(this, "left axis min change to", str(value));
+    }
+    else if (key.equals(PREF_KEY_AXIS_RIGHT_MAX))
+    {
+      int value = check_range(sharePreferences, key, 10, 
+          read_setting_int(PREF_KEY_AXIS_RIGHT_MIN, -10) + 1, 100);
+      set_integer_title(PREF_KEY_AXIS_RIGHT_MAX,
+          getString(R.string.pref_axis_right_max) + ": %d", 10);
+      logv(this, "right axis max change to", str(value));
+    }
+    else if (key.equals(PREF_KEY_AXIS_RIGHT_MIN))
+    {
+      int value = check_range(sharePreferences, key, -10, -100,
+          read_setting_int(PREF_KEY_AXIS_RIGHT_MAX, 10) - 1);
+      set_integer_title(PREF_KEY_AXIS_RIGHT_MIN,
+          getString(R.string.pref_axis_right_min) + ": %d", -10);
+      logv(this, "right axis min change to", str(value));
     }
     else if (key.equals(PREF_KEY_INTERVAL))
     {

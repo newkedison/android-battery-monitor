@@ -17,6 +17,15 @@
     <string name="pref_sum_list_size">范围: 50~500 默认值: 200</string>
     <string name="pref_interval">数据时间间隔</string>
     <string name="pref_sum_interval">列表中两条记录之间的时间差</string>
+    <string name="pref_axis_setting">坐标轴设置</string>
+    <string name="pref_axis_left_max">左坐标轴上限</string>
+    <string name="pref_axis_left_min">左坐标轴下限</string>
+    <string name="pref_axis_right_max">右坐标轴上限</string>
+    <string name="pref_axis_right_min">右坐标轴下限</string>
+    <string name="pref_sum_axis_left_max">范围: 下限+1 ~ 200 默认值:100</string>
+    <string name="pref_sum_axis_left_min">范围: -100 ~ 上限-1 默认值:0</string>
+    <string name="pref_sum_axis_right_max">范围: 下限+1 ~ 100 默认值:10</string>
+    <string name="pref_sum_axis_right_min">范围: -100 ~ 上限-1 默认值:-10</string>
     <string name="pref_tts_enable">是否启用语音提示</string>
     <string name="pref_summaryon_tts_enable">语音提示已启用</string>
     <string name="pref_summaryoff_tts_enable">语音提示已禁用</string>

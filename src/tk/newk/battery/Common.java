@@ -52,6 +52,11 @@ public class Common
   final static String PREF_KEY_SERVICE_ENABLE = "pref_service_enable";
   final static String PREF_KEY_LIST_SIZE = "pref_list_size";
   final static String PREF_KEY_INTERVAL = "pref_interval";
+  final static String PREF_KEY_AXIS_SETTING = "pref_axis_setting";
+  final static String PREF_KEY_AXIS_LEFT_MAX = "pref_axis_left_max";
+  final static String PREF_KEY_AXIS_LEFT_MIN = "pref_axis_left_min";
+  final static String PREF_KEY_AXIS_RIGHT_MAX = "pref_axis_right_max";
+  final static String PREF_KEY_AXIS_RIGHT_MIN = "pref_axis_right_min";
   final static String PREF_KEY_TTS_ENABLE = "pref_tts_enable";
   final static String PREF_KEY_TTS_DETAIL = "pref_tts_detail";
   final static String PREF_KEY_TTS_LOW_ALARM = "pref_tts_low_alarm";

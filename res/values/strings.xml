@@ -17,6 +17,15 @@
     <string name="pref_sum_list_size">Range: 50~500 Default: 200</string>
     <string name="pref_interval">Interval</string>
     <string name="pref_sum_interval">the time between two record</string>
+    <string name="pref_axis_setting">Axis Setting</string>
+    <string name="pref_axis_left_max">Max value of the left axis</string>
+    <string name="pref_axis_left_min">Min value of the left axis</string>
+    <string name="pref_axis_right_max">Max value of the right axis</string>
+    <string name="pref_axis_right_min">Min value of the right axis</string>
+    <string name="pref_sum_axis_left_max">Range: min+1 ~ 200 Default:100</string>
+    <string name="pref_sum_axis_left_min">Range: -100 ~ max-1 Default:0</string>
+    <string name="pref_sum_axis_right_max">Range: min+1 ~ 100 Default:10</string>
+    <string name="pref_sum_axis_right_min">Range: -100 ~ max-1 Default:-10</string>
     <string name="pref_tts_enable">Enable TTS(Text-to-Speech)</string>
     <string name="pref_summaryon_tts_enable">TTS is enabled</string>
     <string name="pref_summaryoff_tts_enable">TTS is disabled</string>
