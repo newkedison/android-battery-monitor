@@ -55,7 +55,7 @@ or build an **unsigned release version** by
 then use `jarsigner` and `zipalign` to sign and align. For more infomation 
 about sign an apk, please refer to 
 [this article](http://newkedison.tk/blog/how-to-make-android-app.html) in my 
-blog(**written in Chinese**).
+blog( **written in Chinese** ).
 
 NOTE: I had write a short script to make a release version in one command(see 
 the [release](https://github.com/newkedison/android-battery-monitor/blob/master/release) 
