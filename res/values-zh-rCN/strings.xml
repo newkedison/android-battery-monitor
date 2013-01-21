@@ -5,11 +5,13 @@
     <string name="activity_title_main">电池监视</string>
     <string name="activity_title_setting">参数设置</string>
     <string name="activity_title_log">查看日志</string>
+    <string name="activity_title_about">关于</string>
     <string name="lbl_battery_level">当前电池状态:</string>
     <string name="string_no_data">暂无数据,请稍后查看</string>
     <string name="menu_curve">查看曲线</string>
     <string name="menu_setting">参数设置</string>
     <string name="menu_log">查看日志</string>
+    <string name="menu_about">关于</string>
     <string name="pref_service_enable">监视电池状态</string>
     <string name="pref_sum_service_enabled">正在监视电池状态</string>
     <string name="pref_sum_service_disabled">已停止监视电池状态</string>
@@ -31,7 +33,7 @@
     <string name="pref_summaryoff_tts_enable">语音提示已禁用</string>
     <string name="pref_tts_detail">语音提示详细设置</string>
     <string name="pref_tts_silent_in_night">夜间静音</string>
-    <string name="pref_summaryon_tts_silent_in_night">在10:00PM~7:00AM之间禁止发生</string>
+    <string name="pref_summaryon_tts_silent_in_night">在10:00PM~7:00AM之间禁止发声</string>
     <string name="pref_summaryoff_tts_silent_in_night">始终允许发声</string>
     <string name="pref_tts_low_alarm">低电量提示</string>
     <string name="pref_summaryon_tts_low_alarm">当电量为25, 23, 21, 19, 17时提示</string>
@@ -58,6 +60,10 @@
     <string name="str_no_enough_data_for_curve">数据不足,无法显示曲线</string>
     <string name="str_notification_content_title" formatted="false">当前电量: %02d%%</string>
     <string name="str_notification_content_text">点击这里查看更详细的信息</string>
+    <string name="str_about_name">名称: </string>
+    <string name="str_about_author">作者: </string>
+    <string name="str_about_version">版本号: </string>
+    <string name="str_about_open_soure">本应用完全开源, 托管于:</string>
     <string name="axis_x_time">时间</string>
     <string name="axis_y_left_level">电量(%)</string>
     <string name="axis_y_right_rate">电量变化量(%)</string>

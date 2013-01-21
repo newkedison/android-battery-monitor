@@ -118,6 +118,11 @@ public class mainActivity extends ListActivity
         Intent open_setting = new Intent(this, SettingsActivity.class);
         startActivity(open_setting);
         return true;
+      case R.id.menu_about:
+        logv(this, "menu_about is click");
+        Intent open_about = new Intent(this, AboutActivity.class);
+        startActivity(open_about);
+        return true;
 
       default:
         return super.onOptionsItemSelected(item);

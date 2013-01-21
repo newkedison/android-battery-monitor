@@ -11,4 +11,8 @@
       android:title="@string/menu_setting"
       android:orderInCategory="10"
       android:showAsAction="never" />
+  <item android:id="@+id/menu_about"
+      android:title="@string/menu_about"
+      android:orderInCategory="20"
+      android:showAsAction="never" />
 </menu>

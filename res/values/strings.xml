@@ -5,11 +5,13 @@
     <string name="activity_title_main">Battery Monitor</string>
     <string name="activity_title_setting">Battery Monitor Setting</string>
     <string name="activity_title_log">View Log</string>
+    <string name="activity_title_about">About this app</string>
     <string name="lbl_battery_level">Battery Status:</string>
     <string name="string_no_data">no data now</string>
     <string name="menu_curve">Curve</string>
     <string name="menu_setting">Setting</string>
     <string name="menu_log">Log</string>
+    <string name="menu_about">About</string>
     <string name="pref_service_enable">Enable Service</string>
     <string name="pref_sum_service_enabled">Service is enabled</string>
     <string name="pref_sum_service_disabled">Service is disabled</string>
@@ -58,6 +60,10 @@
     <string name="str_no_enough_data_for_curve">Too few data to make curve</string>
     <string name="str_notification_content_title" formatted="false">Level: %02d%%</string>
     <string name="str_notification_content_text">Click for more detail</string>
+    <string name="str_about_name">App name: </string>
+    <string name="str_about_author">Author: </string>
+    <string name="str_about_version">Version: </string>
+    <string name="str_about_open_soure">This app is open source. Host in:</string>
     <string name="axis_x_time">Time</string>
     <string name="axis_y_left_level">Level(%)</string>
     <string name="axis_y_right_rate">Rate(%)</string>
