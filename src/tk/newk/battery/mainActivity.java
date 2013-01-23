@@ -4,8 +4,12 @@ import java.util.Date;
 
 import org.achartengine.model.XYSeries;
 
+import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.DialogInterface;
 import android.content.Intent;
+
+import android.content.pm.PackageManager.NameNotFoundException;
 
 import android.graphics.Paint.Align;
 import android.os.Bundle;
@@ -120,8 +124,28 @@ public class mainActivity extends ListActivity
         return true;
       case R.id.menu_about:
         logv(this, "menu_about is click");
-        Intent open_about = new Intent(this, AboutActivity.class);
-        startActivity(open_about);
+        String version_name = "";
+        try {
+          version_name = getPackageManager().getPackageInfo(
+              getPackageName(), 0).versionName;
+        } catch (NameNotFoundException e) {
+          version_name = "Unknown";
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(getString(R.string.app_name) + "("
+            + version_name + ")\n"
+            + getString(R.string.str_about_author) + "newkedison\n\n"
+            + getString(R.string.str_about_open_soure)
+            + "\nhttps://github.com/newkedison/android-battery-monitor")
+          .setCancelable(false)
+          .setNegativeButton(getString(R.string.btn_ok),
+            new DialogInterface.OnClickListener() {
+              public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel();
+              }
+            });
+        AlertDialog alert = builder.create();
+        alert.show();
         return true;
 
       default:

@@ -6,6 +6,7 @@
     <string name="activity_title_setting">参数设置</string>
     <string name="activity_title_log">查看日志</string>
     <string name="activity_title_about">关于</string>
+    <string name="btn_ok">确定</string>
     <string name="lbl_battery_level">当前电池状态:</string>
     <string name="string_no_data">暂无数据,请稍后查看</string>
     <string name="menu_curve">查看曲线</string>
@@ -60,7 +61,6 @@
     <string name="str_no_enough_data_for_curve">数据不足,无法显示曲线</string>
     <string name="str_notification_content_title" formatted="false">当前电量: %02d%%</string>
     <string name="str_notification_content_text">点击这里查看更详细的信息</string>
-    <string name="str_about_name">名称: </string>
     <string name="str_about_author">作者: </string>
     <string name="str_about_version">版本号: </string>
     <string name="str_about_open_soure">本应用完全开源, 托管于:</string>
