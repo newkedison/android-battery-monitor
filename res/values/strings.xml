@@ -29,10 +29,11 @@
     <string name="pref_sum_axis_left_min">Range: -100 ~ max-1 Default:0</string>
     <string name="pref_sum_axis_right_max">Range: min+1 ~ 100 Default:10</string>
     <string name="pref_sum_axis_right_min">Range: -100 ~ max-1 Default:-10</string>
-    <string name="pref_tts_enable">Enable TTS(Text-to-Speech)</string>
+    <string name="pref_tts_setting">TTS(Text-to-Speech) Settings</string>
+    <string name="pref_tts_enable">Enable TTS</string>
     <string name="pref_summaryon_tts_enable">TTS is enabled</string>
     <string name="pref_summaryoff_tts_enable">TTS is disabled</string>
-    <string name="pref_tts_detail">TTS detail setting</string>
+    <string name="pref_tts_detail">TTS detail settings</string>
     <string name="pref_tts_silent_in_night">TTS silent in night</string>
     <string name="pref_summaryon_tts_silent_in_night">Keep silent when 10:00PM~7:00AM</string>
     <string name="pref_summaryoff_tts_silent_in_night">TTS always on</string>

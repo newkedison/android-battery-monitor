@@ -29,6 +29,7 @@
     <string name="pref_sum_axis_left_min">范围: -100 ~ 上限-1 默认值:0</string>
     <string name="pref_sum_axis_right_max">范围: 下限+1 ~ 100 默认值:10</string>
     <string name="pref_sum_axis_right_min">范围: -100 ~ 上限-1 默认值:-10</string>
+    <string name="pref_tts_setting">语音提示设置</string>
     <string name="pref_tts_enable">是否启用语音提示</string>
     <string name="pref_summaryon_tts_enable">语音提示已启用</string>
     <string name="pref_summaryoff_tts_enable">语音提示已禁用</string>
